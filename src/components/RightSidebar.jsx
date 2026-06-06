@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useState, useEffect } from 'react';
 import { getTodayPrayerTimes, getTimeUntilNext } from '../utils/prayerUtils';
+import { hadithCollection } from '../data/hadithData';
 
 function PrayerCard() {
   const [data, setData] = useState(() => getTodayPrayerTimes());
@@ -128,13 +129,28 @@ export default function RightSidebar() {
         <PrayerCard />
 
         {/* Daily Hadith */}
-        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 mb-4 text-center shadow-sm">
-          <p className="text-[11px] text-amber-600 font-bold uppercase tracking-wider mb-1">💡 Hadith of the Day · আজকের হাদিস</p>
-          <p className="text-amber-800 text-[13px] leading-snug font-medium">
-            "মুমিনদের মধ্যে সর্বোত্তম সেই ব্যক্তি যার চরিত্র সবচেয়ে সুন্দর।"
-          </p>
-          <p className="text-amber-600 text-[11px] mt-1.5 font-semibold">— সুনান আত-তিরমিযী</p>
-        </div>
+        {(() => {
+          const now = new Date();
+          const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+          const h = hadithCollection[dayOfYear % hadithCollection.length];
+          return (
+            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 mb-4 shadow-sm">
+              <p className="text-[11px] text-amber-600 font-bold uppercase tracking-wider mb-2 text-center">
+                💡 Hadith of the Day · আজকের হাদিস
+              </p>
+              {h.arabic && (
+                <p className="text-amber-700 text-[14px] arabic text-center leading-loose mb-2">{h.arabic}</p>
+              )}
+              <p className="text-amber-800 text-[12px] leading-snug font-medium text-center">
+                "{h.text}"
+              </p>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-amber-200">
+                <p className="text-amber-600 text-[11px] font-semibold">📚 {h.source}</p>
+                <span className="text-[10px] bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full font-bold">{h.topic}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         <TrendingTopics />
 

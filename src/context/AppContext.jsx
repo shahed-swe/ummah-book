@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { demoUsers, initialPosts, initialNotifications, initialContacts } from '../data/initialData';
+import { hadithCollection } from '../data/hadithData';
 
 const AppContext = createContext();
 const STORAGE_V = 'ub_v5';
@@ -65,6 +66,43 @@ export function AppProvider({ children }) {
     else localStorage.removeItem('ub_user');
   }, [currentUserId, allUsers]);
   useEffect(() => { localStorage.setItem('ub_posts', JSON.stringify(posts)); }, [posts]);
+
+  // Daily hadith auto-post
+  useEffect(() => {
+    const todayKey = new Date().toISOString().slice(0, 10); // "2025-06-06"
+    const lastPosted = localStorage.getItem('ub_hadith_date');
+    if (lastPosted === todayKey) return;
+
+    // Pick today's hadith deterministically by day-of-year
+    const now = new Date();
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    const h = hadithCollection[dayOfYear % hadithCollection.length];
+
+    // Bot user — system account (admin id:3)
+    const botUser = { id: 3, name: 'UmmahBook Daily', avatar: 'https://i.pravatar.cc/150?img=68' };
+    const todayLabel = now.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const newPost = {
+      id: Date.now(),
+      user: botUser,
+      time: todayLabel,
+      privacy: 'public',
+      type: 'hadith',
+      arabic: h.arabic,
+      content: `${h.text}\n\n📚 ${h.source}\n🏷️ বিষয়: ${h.topic}`,
+      image: null,
+      likes: 0, comments: 0, shares: 0,
+      reactions: [], userReactions: {}, commentsList: [], savedBy: [],
+      isAutoPost: true,
+    };
+
+    setPosts(prev => {
+      // Remove previous auto-post if any from today to avoid duplicates on re-render
+      const filtered = prev.filter(p => !p.isAutoPost || p.time !== todayLabel);
+      return [newPost, ...filtered];
+    });
+    localStorage.setItem('ub_hadith_date', todayKey);
+  }, []);
   useEffect(() => { localStorage.setItem('ub_dark', darkMode); }, [darkMode]);
   useEffect(() => { localStorage.setItem('ub_saved', JSON.stringify(savedPosts)); }, [savedPosts]);
   useEffect(() => {
