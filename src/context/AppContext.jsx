@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { demoUsers, initialPosts, initialNotifications, initialContacts } from '../data/initialData';
 
 const AppContext = createContext();
-const STORAGE_V = 'ub_v4';
+const STORAGE_V = 'ub_v5';
 
 function freshUsers() {
   return demoUsers.map(u => ({
