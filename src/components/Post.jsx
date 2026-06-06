@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaGlobe, FaUserFriends, FaEllipsisH, FaShare, FaRegComment } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
@@ -25,7 +25,7 @@ export default function Post({ post }) {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [showMenu, setShowMenu] = useState(false);
-  let reactionTimer;
+  const hoverTimer = useRef(null);
 
   const myReaction = currentUser ? (post.userReactions || {})[currentUser.id] : null;
   const reactionObj = REACTIONS.find(r => r.label === myReaction);
@@ -36,9 +36,12 @@ export default function Post({ post }) {
     setShowReactions(false);
   };
 
-  const handleLikeClick = () => {
-    if (currentUser) toggleLike(post.id, REACTIONS[0]);
-  };
+  // Click: toggle the reaction picker open/close (works on mobile too)
+  const handleMainClick = () => setShowReactions(prev => !prev);
+
+  // Desktop hover: show picker after 400ms
+  const handleMouseEnter = () => { hoverTimer.current = setTimeout(() => setShowReactions(true), 400); };
+  const handleMouseLeave = () => { clearTimeout(hoverTimer.current); };
 
   const handleComment = (e) => {
     e.preventDefault();
@@ -181,35 +184,40 @@ export default function Post({ post }) {
         {/* Like/React */}
         <div className="relative flex-1">
           <button
-            onMouseEnter={() => { reactionTimer = setTimeout(() => setShowReactions(true), 500); }}
-            onMouseLeave={() => { clearTimeout(reactionTimer); setTimeout(() => setShowReactions(false), 300); }}
-            onClick={handleLikeClick}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleMainClick}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors active:scale-95">
             {myReaction && reactionObj
               ? <><span className="text-xl">{reactionObj.emoji}</span><span className="font-bold text-[13px]" style={{ color: reactionObj.color }}>{reactionObj.label}</span></>
               : (
                 <div className="flex items-center gap-1.5">
                   <span className="text-xl">🤲</span>
                   <div className="text-left leading-tight">
-                    <p className="font-bold text-[11px] text-green-700">Dua</p>
-                    <p className="text-[10px] text-green-500">দু'আ</p>
+                    <p className="font-bold text-[11px] text-green-700">React</p>
+                    <p className="text-[10px] text-green-500">রিয়েক্ট করুন</p>
                   </div>
                 </div>
               )
             }
           </button>
+
           {showReactions && (
-            <div
-              className="absolute bottom-9 left-0 bg-white rounded-full shadow-xl px-2 py-2 flex items-center gap-1 z-10 border border-green-200"
-              onMouseEnter={() => setShowReactions(true)}
-              onMouseLeave={() => setShowReactions(false)}>
-              {REACTIONS.map(r => (
-                <button key={r.label} onClick={() => handleReact(r)} title={r.label}
-                  className={`text-[26px] hover:scale-150 transition-transform duration-150 cursor-pointer ${myReaction === r.label ? 'scale-125' : ''}`}>
-                  {r.emoji}
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Backdrop — click outside to close */}
+              <div className="fixed inset-0 z-[9]" onClick={() => setShowReactions(false)} />
+              <div
+                className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-2xl px-3 py-2.5 flex items-center gap-2 z-10 border border-green-100"
+                onMouseEnter={() => { clearTimeout(hoverTimer.current); setShowReactions(true); }}
+                onMouseLeave={() => setShowReactions(false)}>
+                {REACTIONS.map(r => (
+                  <button key={r.label} onClick={() => handleReact(r)} title={r.label}
+                    className={`text-[28px] hover:scale-150 active:scale-110 transition-transform duration-150 cursor-pointer leading-none ${myReaction === r.label ? 'scale-125 drop-shadow-md' : ''}`}>
+                    {r.emoji}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
