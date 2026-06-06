@@ -37,27 +37,42 @@ function PrayerCard() {
       </div>
       <div className="bg-white divide-y divide-green-50">
         {data.prayers.map((p) => (
-          <div key={p.key} className={`flex items-center justify-between px-4 py-2.5 transition-colors ${
-            p.isCurrent ? 'bg-green-50' : p.isNext ? 'bg-yellow-50/50' : ''
+          <div key={p.key} className={`px-4 py-2.5 transition-colors ${
+            p.isCurrent ? 'bg-green-50' : p.isNext ? 'bg-yellow-50/40' : ''
           }`}>
-            <div className="flex items-center gap-2">
-              <span className="text-base">{p.icon}</span>
-              <div className="leading-tight">
-                <span className={`text-[13px] font-medium block ${p.isCurrent ? 'text-green-700 font-bold' : 'text-gray-800'}`}>{p.name}</span>
-                <span className="text-[11px] text-green-500">{p.bn}</span>
+            <div className="flex items-center justify-between">
+              {/* Left: icon + name */}
+              <div className="flex items-center gap-2">
+                <span className="text-[18px]">{p.icon}</span>
+                <div className="leading-tight">
+                  <span className={`text-[13px] font-bold block ${p.isCurrent ? 'text-green-700' : 'text-gray-800'}`}>
+                    {p.name} · {p.bn}
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {p.formatted} — {p.endFormatted}
+                  </span>
+                </div>
+              </div>
+              {/* Right: badge */}
+              <div>
+                {p.isCurrent && (
+                  <span className="text-[10px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">এখন</span>
+                )}
+                {p.isNext && !p.isCurrent && (
+                  <span className="text-[10px] bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full font-bold">পরবর্তী</span>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-[13px] font-mono font-bold ${p.isCurrent ? 'text-green-700' : p.isNext ? 'text-yellow-600' : 'text-gray-500'}`}>
-                {p.formatted}
-              </span>
-              {p.isCurrent && (
-                <span className="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded-full font-bold">Now · এখন</span>
-              )}
-              {p.isNext && !p.isCurrent && (
-                <span className="text-[10px] bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded-full font-bold">Next · পরবর্তী</span>
-              )}
-            </div>
+
+            {/* Progress bar for current prayer */}
+            {p.isCurrent && (
+              <div className="mt-2 h-1.5 bg-green-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-500 rounded-full transition-all duration-1000"
+                  style={{ width: `${p.progress}%` }}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
