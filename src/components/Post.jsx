@@ -163,19 +163,30 @@ export default function Post({ post }) {
       )}
 
       {/* Counts */}
-      <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-1">
-          {(post.reactions?.length > 0) && (
-            <span className="text-base">{post.reactions[0]}</span>
-          )}
-          <span className="text-[14px] text-[#65676b] ml-1">
-            {(post.likes || 0).toLocaleString()}
-          </span>
-        </div>
-        <button onClick={() => setShowComments(!showComments)} className="text-[14px] text-[#65676b] hover:underline">
-          {post.comments} Comments · মন্তব্য &nbsp;·&nbsp; {post.shares} Shares · শেয়ার
-        </button>
-      </div>
+      {(() => {
+        const allLabels = Object.values(post.userReactions || {});
+        const topEmojis = [...new Set(allLabels)]
+          .slice(0, 3)
+          .map(label => REACTIONS.find(r => r.label === label)?.emoji)
+          .filter(Boolean);
+        return (
+          <div className="flex items-center justify-between px-4 py-2">
+            <div className="flex items-center gap-1">
+              {topEmojis.length > 0 && (
+                <span className="text-[16px] leading-none">{topEmojis.join('')}</span>
+              )}
+              {(post.likes || 0) > 0 && (
+                <span className="text-[14px] text-[#65676b] ml-1">
+                  {(post.likes || 0).toLocaleString()}
+                </span>
+              )}
+            </div>
+            <button onClick={() => setShowComments(!showComments)} className="text-[14px] text-[#65676b] hover:underline">
+              {post.comments > 0 && `${post.comments} Comments ·`} {post.shares > 0 && `${post.shares} Shares`}
+            </button>
+          </div>
+        );
+      })()}
 
       <hr className="border-green-100 mx-4" />
 
@@ -194,8 +205,8 @@ export default function Post({ post }) {
                 <div className="flex items-center gap-1.5">
                   <span className="text-xl">🤲</span>
                   <div className="text-left leading-tight">
-                    <p className="font-bold text-[11px] text-green-700">React</p>
-                    <p className="text-[10px] text-green-500">রিয়েক্ট করুন</p>
+                    <p className="font-bold text-[11px] text-green-700">Dua</p>
+                    <p className="text-[10px] text-green-500">দু'আ</p>
                   </div>
                 </div>
               )
