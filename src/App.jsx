@@ -15,7 +15,16 @@ import GroupsPage from './pages/GroupsPage'
 import EventsPage from './pages/EventsPage'
 
 function PrivateRoute({ children }) {
-  const { currentUser } = useApp();
+  const { currentUser, authLoading } = useApp();
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-green-50">
+      <div className="text-center">
+        <p className="text-[48px] mb-3">🕌</p>
+        <p className="text-green-700 font-bold text-[18px]">UmmahBook</p>
+        <p className="text-gray-500 text-[13px] mt-1">লোড হচ্ছে...</p>
+      </div>
+    </div>
+  );
   return currentUser ? children : <Navigate to="/login" replace />;
 }
 

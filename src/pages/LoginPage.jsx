@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(''); setLoading(true);
     await new Promise(r => setTimeout(r, 600));
-    const res = login(form.username, form.password);
+    const res = await login(form.username, form.password);
     setLoading(false);
     if (res.ok) navigate('/');
     else setError(res.msg);
@@ -29,7 +29,7 @@ export default function LoginPage() {
     if (form.password.length < 6) { setError('Password কমপক্ষে ৬ অক্ষর হতে হবে!'); return; }
     setLoading(true);
     await new Promise(r => setTimeout(r, 600));
-    const res = register({ name: form.name, username: form.username, password: form.password });
+    const res = await register({ name: form.name, username: form.username, password: form.password });
     setLoading(false);
     if (res.ok) navigate('/');
     else setError(res.msg);
