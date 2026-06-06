@@ -52,7 +52,10 @@ export function AppProvider({ children }) {
   });
   const [contacts] = useState(initialContacts);
 
-  useEffect(() => { localStorage.setItem('ub_users', JSON.stringify(allUsers)); }, [allUsers]);
+  useEffect(() => {
+    try { localStorage.setItem('ub_users', JSON.stringify(allUsers)); }
+    catch { /* localStorage quota exceeded — images too large, ignore */ }
+  }, [allUsers]);
   useEffect(() => {
     if (currentUserId != null) localStorage.setItem('ub_userid', JSON.stringify(currentUserId));
     else localStorage.removeItem('ub_userid');

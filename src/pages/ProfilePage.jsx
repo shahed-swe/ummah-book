@@ -66,9 +66,24 @@ export default function ProfilePage() {
 
   const handleImageChange = (field, file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => updateProfile({ [field]: e.target.result });
-    reader.readAsDataURL(file);
+    const maxW = field === 'coverPhoto' ? 1200 : 400;
+    const maxH = field === 'coverPhoto' ? 400  : 400;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width, maxH / img.height);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      try {
+        updateProfile({ [field]: canvas.toDataURL('image/jpeg', 0.75) });
+      } catch {
+        alert('Image too large. Please choose a smaller image.');
+      }
+    };
+    img.src = url;
   };
 
   const userPosts = posts.filter(p => p.user.id === profileUser.id);
