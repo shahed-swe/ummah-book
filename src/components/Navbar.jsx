@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaSearch, FaBell, FaHome, FaUsers, FaBookOpen, FaMosque, FaStar } from 'react-icons/fa';
+import { FaSearch, FaBell, FaHome, FaUsers, FaBookOpen, FaMosque, FaStar, FaUserFriends } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 import NotificationPanel from './NotificationPanel';
 import ProfileDropdown from './ProfileDropdown';
+import FriendRequestsPanel from './FriendRequestsPanel';
 
 const navLinks = [
   { icon: FaHome,     en: 'Home',    bn: 'হোম',      path: '/' },
@@ -14,23 +15,28 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { currentUser, unreadCount } = useApp();
+  const { currentUser, unreadCount, pendingRequestsCount } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotif, setShowNotif] = useState(false);
+  const [showFriendReq, setShowFriendReq] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [search, setSearch] = useState('');
   const notifRef = useRef(null);
+  const friendReqRef = useRef(null);
   const profileRef = useRef(null);
 
   useEffect(() => {
     const handleClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false);
+      if (friendReqRef.current && !friendReqRef.current.contains(e.target)) setShowFriendReq(false);
       if (profileRef.current && !profileRef.current.contains(e.target)) setShowProfile(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const closeAll = () => { setShowNotif(false); setShowFriendReq(false); setShowProfile(false); };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[56px] flex items-center shadow-md"
@@ -74,9 +80,26 @@ export default function Navbar() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
+
+          {/* Friend Requests */}
+          <div className="relative" ref={friendReqRef}>
+            <button
+              onClick={() => { setShowFriendReq(!showFriendReq); setShowNotif(false); setShowProfile(false); }}
+              title="Friend Requests · বন্ধু অনুরোধ"
+              className="relative w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
+              <FaUserFriends className="text-white text-[16px]" />
+              {pendingRequestsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center border-2 border-green-700">
+                  {pendingRequestsCount}
+                </span>
+              )}
+            </button>
+            {showFriendReq && <FriendRequestsPanel onClose={() => setShowFriendReq(false)} />}
+          </div>
+
           {/* Notification bell */}
           <div className="relative" ref={notifRef}>
-            <button onClick={() => { setShowNotif(!showNotif); setShowProfile(false); }}
+            <button onClick={() => { setShowNotif(!showNotif); setShowFriendReq(false); setShowProfile(false); }}
               className="relative w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
               <FaBell className="text-white text-[16px]" />
               {unreadCount > 0 && (
@@ -91,7 +114,7 @@ export default function Navbar() {
           {/* Profile */}
           {currentUser && (
             <div className="relative" ref={profileRef}>
-              <button onClick={() => { setShowProfile(!showProfile); setShowNotif(false); }}
+              <button onClick={() => { setShowProfile(!showProfile); closeAll(); }}
                 className="flex items-center gap-2 bg-white/15 hover:bg-white/25 rounded-full pl-1 pr-3 py-1 cursor-pointer transition-colors">
                 <img src={currentUser.avatar} alt="profile" className="w-8 h-8 rounded-full object-cover border-2 border-green-400" />
                 <span className="text-white text-[13px] font-medium hidden lg:block">{currentUser.name.split(' ')[0]}</span>

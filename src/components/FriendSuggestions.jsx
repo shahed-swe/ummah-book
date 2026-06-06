@@ -4,7 +4,7 @@ import { FaTimes } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 
 export default function FriendSuggestions() {
-  const { currentUser, allUsers, isFriend, hasSentRequest, sendFriendRequest, cancelFriendRequest } = useApp();
+  const { currentUser, allUsers, isFriend, hasSentRequest, hasReceivedRequest, sendFriendRequest, cancelFriendRequest, acceptFriend } = useApp();
   const [dismissed, setDismissed] = useState([]);
 
   if (!currentUser) return null;
@@ -47,7 +47,14 @@ export default function FriendSuggestions() {
               </Link>
               <p className="text-[11px] text-gray-500 mt-0.5 truncate">{person.title || 'Muslim'}</p>
 
-              {hasSentRequest(person.id) ? (
+              {hasReceivedRequest(person.id) ? (
+                <button
+                  onClick={() => acceptFriend(person.id)}
+                  className="w-full mt-2 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] transition-colors leading-tight">
+                  <p>✓ Accept</p>
+                  <p className="opacity-80">গ্রহণ করুন</p>
+                </button>
+              ) : hasSentRequest(person.id) ? (
                 <button
                   onClick={() => cancelFriendRequest(person.id)}
                   className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[10px] transition-colors hover:bg-yellow-200 leading-tight">

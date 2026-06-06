@@ -235,6 +235,7 @@ export function AppProvider({ children }) {
   const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const pendingRequestsCount = (currentUser?.receivedRequests || []).length;
 
   return (
     <AppContext.Provider value={{
@@ -246,6 +247,7 @@ export function AppProvider({ children }) {
       contacts, allUsers,
       sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
       isFriend, hasSentRequest, hasReceivedRequest, getUserById,
+      pendingRequestsCount,
     }}>
       {children}
     </AppContext.Provider>
