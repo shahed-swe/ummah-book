@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { FaGlobe, FaUserFriends, FaEllipsisH, FaShare, FaRegComment } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
@@ -21,15 +22,53 @@ const TYPE_STYLES = {
 
 export default function Post({ post }) {
   const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts } = useApp();
+  const [showReactions, setShowReactions] = useState(false);
+  const [pickerPos, setPickerPos]       = useState({ x: 0, y: 0 });
   const [showComments, setShowComments] = useState(false);
-  const [comment, setComment] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
+  const [comment, setComment]           = useState('');
+  const [showMenu, setShowMenu]         = useState(false);
+
+  const duaBtnRef      = useRef(null);
+  const hoverTimer     = useRef(null);
+  const longPressTimer = useRef(null);
+  const longFired      = useRef(false);
 
   const myReaction = currentUser ? (post.userReactions || {})[currentUser.id] : null;
+  const reactionObj = REACTIONS.find(r => r.label === myReaction);
   const isSaved = savedPosts.includes(post.id);
+
+  const openPicker = () => {
+    if (duaBtnRef.current) {
+      const r = duaBtnRef.current.getBoundingClientRect();
+      setPickerPos({ x: Math.max(8, r.left - 30), y: r.top - 62 });
+    }
+    setShowReactions(true);
+  };
 
   const handleReact = (r) => {
     if (currentUser) toggleLike(post.id, r);
+    setShowReactions(false);
+  };
+
+  // Desktop: hover 500ms → open picker
+  const onMouseEnter = () => { hoverTimer.current = setTimeout(openPicker, 500); };
+  const onMouseLeave = () => { clearTimeout(hoverTimer.current); };
+
+  // Mobile: long press 500ms → open picker; short tap → Dua directly
+  const onTouchStart = () => {
+    longFired.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longFired.current = true;
+      openPicker();
+    }, 500);
+  };
+  const onTouchEnd = () => clearTimeout(longPressTimer.current);
+
+  const onDuaClick = () => {
+    if (longFired.current) { longFired.current = false; return; }
+    clearTimeout(hoverTimer.current);
+    setShowReactions(false);
+    handleReact(REACTIONS[0]);
   };
 
   const handleComment = (e) => {
@@ -182,21 +221,26 @@ export default function Post({ post }) {
       {/* Action buttons — Facebook style */}
       <div className="flex items-center px-2 py-1">
 
-        {/* Dua / React */}
+        {/* Dua / React — tap=Dua, hold/hover=all reactions */}
         <button
-          onClick={() => handleReact(REACTIONS[0])}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors active:scale-95 ${
+          ref={duaBtnRef}
+          onClick={onDuaClick}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors select-none ${
             myReaction ? 'bg-green-50' : 'hover:bg-green-50'
           }`}>
           <span className="text-[20px] leading-none">
-            {myReaction ? REACTIONS.find(r => r.label === myReaction)?.emoji || '🤲' : '🤲'}
+            {reactionObj ? reactionObj.emoji : '🤲'}
           </span>
           <div className="text-left leading-tight">
-            <p className={`font-bold text-[12px] ${myReaction ? 'text-green-600' : 'text-gray-600'}`}>
+            <p className="font-bold text-[12px]" style={{ color: reactionObj ? reactionObj.color : '#4b5563' }}>
               {myReaction || 'Dua'}
             </p>
-            <p className={`text-[10px] ${myReaction ? 'text-green-500' : 'text-gray-400'}`}>
-              {myReaction ? 'দেওয়া হয়েছে' : "দু'আ"}
+            <p className="text-[10px] text-gray-400">
+              {myReaction ? 'রিয়েক্ট করা হয়েছে' : "দু'আ · ধরে রাখুন ↕"}
             </p>
           </div>
         </button>
@@ -226,6 +270,33 @@ export default function Post({ post }) {
         </button>
 
       </div>
+
+      {/* Reaction picker — rendered at body root via portal (bypasses overflow:hidden) */}
+      {showReactions && createPortal(
+        <>
+          <div
+            className="fixed inset-0"
+            style={{ zIndex: 9998 }}
+            onClick={() => setShowReactions(false)}
+          />
+          <div
+            className="fixed flex items-center gap-1.5 bg-white rounded-full shadow-2xl px-3 py-2.5 border border-green-100"
+            style={{ left: pickerPos.x, top: pickerPos.y, zIndex: 9999 }}>
+            {REACTIONS.map(r => (
+              <button
+                key={r.label}
+                onClick={() => handleReact(r)}
+                title={r.label}
+                className={`text-[28px] leading-none transition-transform duration-150 active:scale-90 hover:scale-150 ${
+                  myReaction === r.label ? 'scale-[1.35] drop-shadow' : ''
+                }`}>
+                {r.emoji}
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
 
       {/* Comments */}
       {showComments && (
