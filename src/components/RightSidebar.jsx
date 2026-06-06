@@ -1,9 +1,25 @@
 import { FaSearch, FaEllipsisH, FaEdit, FaHashtag } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { prayerTimes } from '../data/initialData';
+import { useState, useEffect } from 'react';
+import { getTodayPrayerTimes, getTimeUntilNext } from '../utils/prayerUtils';
 
 function PrayerCard() {
+  const [data, setData] = useState(() => getTodayPrayerTimes());
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setData(getTodayPrayerTimes());
+      setNow(new Date());
+    }, 60000);
+    return () => clearInterval(tick);
+  }, []);
+
+  const today = now.toLocaleDateString('en-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const nextP = data.nextPrayer;
+  const countdown = nextP ? getTimeUntilNext(nextP.time) : '';
+
   return (
     <div className="rounded-xl overflow-hidden border border-green-200 mb-4 shadow-sm">
       <div className="pattern-bg px-4 py-3 text-center">
@@ -11,20 +27,36 @@ function PrayerCard() {
         <p className="text-white font-bold text-[15px]">🕌 Prayer Times · নামাজের সময়</p>
         <p className="text-green-300 text-[12px]">Dhaka, Bangladesh · ঢাকা</p>
         <div className="mt-2 bg-white/10 rounded-lg px-3 py-1.5">
-          <p className="text-yellow-300 text-[11px] font-bold">৭ যুল-হিজ্জাহ ১৪৪৬ AH</p>
-          <p className="text-green-200 text-[11px]">৬ জুন ২০২৫, শুক্রবার</p>
+          <p className="text-green-200 text-[11px]">{today}</p>
+          {nextP && countdown && (
+            <p className="text-yellow-300 text-[11px] font-bold mt-0.5">
+              ⏳ {nextP.name} · {nextP.bn} in {countdown}
+            </p>
+          )}
         </div>
       </div>
       <div className="bg-white divide-y divide-green-50">
-        {prayerTimes.map((p, i) => (
-          <div key={p.name} className={`flex items-center justify-between px-4 py-2 ${i === 1 ? 'bg-green-50' : ''}`}>
+        {data.prayers.map((p) => (
+          <div key={p.key} className={`flex items-center justify-between px-4 py-2.5 transition-colors ${
+            p.isCurrent ? 'bg-green-50' : p.isNext ? 'bg-yellow-50/50' : ''
+          }`}>
             <div className="flex items-center gap-2">
               <span className="text-base">{p.icon}</span>
-              <span className={`text-[13px] font-medium ${i === 1 ? 'text-green-700 font-bold' : 'text-gray-800'}`}>{p.name}</span>
+              <div className="leading-tight">
+                <span className={`text-[13px] font-medium block ${p.isCurrent ? 'text-green-700 font-bold' : 'text-gray-800'}`}>{p.name}</span>
+                <span className="text-[11px] text-green-500">{p.bn}</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-[13px] font-mono ${i === 1 ? 'text-green-700 font-bold' : 'text-gray-500'}`}>{p.time}</span>
-              {i === 1 && <span className="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded-full font-bold">Now · এখন</span>}
+              <span className={`text-[13px] font-mono font-bold ${p.isCurrent ? 'text-green-700' : p.isNext ? 'text-yellow-600' : 'text-gray-500'}`}>
+                {p.formatted}
+              </span>
+              {p.isCurrent && (
+                <span className="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded-full font-bold">Now · এখন</span>
+              )}
+              {p.isNext && !p.isCurrent && (
+                <span className="text-[10px] bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded-full font-bold">Next · পরবর্তী</span>
+              )}
             </div>
           </div>
         ))}
