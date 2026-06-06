@@ -1,0 +1,231 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+import { demoUsers, initialPosts, initialNotifications, initialContacts } from '../data/initialData';
+
+const AppContext = createContext();
+
+export function AppProvider({ children }) {
+  const [allUsers, setAllUsers] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('ub_users'));
+      if (stored?.length) {
+        return stored.map(u => ({
+          ...u,
+          friendIds: u.friendIds || [],
+          sentRequests: u.sentRequests || [],
+          receivedRequests: u.receivedRequests || [],
+        }));
+      }
+    } catch {}
+    return demoUsers.map(u => ({
+      ...u,
+      friendIds: u.friendIds || [],
+      sentRequests: u.sentRequests || [],
+      receivedRequests: u.receivedRequests || [],
+    }));
+  });
+
+  const [currentUserId, setCurrentUserId] = useState(() => {
+    try {
+      const id = JSON.parse(localStorage.getItem('ub_userid'));
+      if (id) return id;
+      const user = JSON.parse(localStorage.getItem('ub_user'));
+      return user?.id || null;
+    } catch { return null; }
+  });
+
+  const currentUser = currentUserId ? (allUsers.find(u => u.id === currentUserId) || null) : null;
+
+  const [posts, setPosts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ub_posts')) || initialPosts; } catch { return initialPosts; }
+  });
+
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ub_dark') === 'true');
+  const [savedPosts, setSavedPosts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ub_saved')) || []; } catch { return []; }
+  });
+  const [contacts] = useState(initialContacts);
+
+  useEffect(() => { localStorage.setItem('ub_users', JSON.stringify(allUsers)); }, [allUsers]);
+  useEffect(() => {
+    if (currentUserId != null) localStorage.setItem('ub_userid', JSON.stringify(currentUserId));
+    else localStorage.removeItem('ub_userid');
+  }, [currentUserId]);
+  useEffect(() => {
+    if (currentUser) localStorage.setItem('ub_user', JSON.stringify(currentUser));
+    else localStorage.removeItem('ub_user');
+  }, [currentUser]);
+  useEffect(() => { localStorage.setItem('ub_posts', JSON.stringify(posts)); }, [posts]);
+  useEffect(() => { localStorage.setItem('ub_dark', darkMode); }, [darkMode]);
+  useEffect(() => { localStorage.setItem('ub_saved', JSON.stringify(savedPosts)); }, [savedPosts]);
+  useEffect(() => {
+    if (darkMode) document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+  }, [darkMode]);
+
+  // Auth
+  const login = (username, password) => {
+    const user = allUsers.find(u => u.username === username && u.password === password);
+    if (user) { setCurrentUserId(user.id); return { ok: true }; }
+    return { ok: false, msg: 'ভুল username বা password!' };
+  };
+
+  const register = ({ name, username, password }) => {
+    const exists = allUsers.find(u => u.username === username);
+    if (exists) return { ok: false, msg: 'এই username ইতিমধ্যে আছে!' };
+    const newUser = {
+      id: Date.now(), username, password, name,
+      avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 60) + 1}`,
+      coverPhoto: `https://picsum.photos/seed/${username}/900/300`,
+      bio: 'Muslim · Bangladesh 🇧🇩', location: 'Bangladesh',
+      joinDate: 'June 2025', friends: 0, title: 'Muslim · Bangladesh',
+      friendIds: [], sentRequests: [], receivedRequests: [],
+    };
+    setAllUsers(prev => [...prev, newUser]);
+    setCurrentUserId(newUser.id);
+    return { ok: true };
+  };
+
+  const logout = () => {
+    setCurrentUserId(null);
+    localStorage.removeItem('ub_user');
+    localStorage.removeItem('ub_userid');
+  };
+
+  const updateProfile = (updates) => {
+    setAllUsers(prev => prev.map(u => u.id === currentUserId ? { ...u, ...updates } : u));
+  };
+
+  // Friend system
+  const sendFriendRequest = (toUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, sentRequests: [...(u.sentRequests || []), toUserId] };
+      if (u.id === toUserId) return { ...u, receivedRequests: [...(u.receivedRequests || []), currentUserId] };
+      return u;
+    }));
+  };
+
+  const cancelFriendRequest = (toUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, sentRequests: (u.sentRequests || []).filter(id => id !== toUserId) };
+      if (u.id === toUserId) return { ...u, receivedRequests: (u.receivedRequests || []).filter(id => id !== currentUserId) };
+      return u;
+    }));
+  };
+
+  const acceptFriend = (fromUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return {
+        ...u,
+        friendIds: [...(u.friendIds || []), fromUserId],
+        receivedRequests: (u.receivedRequests || []).filter(id => id !== fromUserId),
+        friends: (u.friends || 0) + 1,
+      };
+      if (u.id === fromUserId) return {
+        ...u,
+        friendIds: [...(u.friendIds || []), currentUserId],
+        sentRequests: (u.sentRequests || []).filter(id => id !== currentUserId),
+        friends: (u.friends || 0) + 1,
+      };
+      return u;
+    }));
+  };
+
+  const removeFriend = (userId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return {
+        ...u,
+        friendIds: (u.friendIds || []).filter(id => id !== userId),
+        friends: Math.max(0, (u.friends || 0) - 1),
+      };
+      if (u.id === userId) return {
+        ...u,
+        friendIds: (u.friendIds || []).filter(id => id !== currentUserId),
+        friends: Math.max(0, (u.friends || 0) - 1),
+      };
+      return u;
+    }));
+  };
+
+  const isFriend = (userId) => (currentUser?.friendIds || []).includes(userId);
+  const hasSentRequest = (userId) => (currentUser?.sentRequests || []).includes(userId);
+  const hasReceivedRequest = (userId) => (currentUser?.receivedRequests || []).includes(userId);
+  const getUserById = (id) => allUsers.find(u => u.id === parseInt(id));
+
+  // Posts
+  const addPost = ({ content, image, type, arabic, privacy }) => {
+    const newPost = {
+      id: Date.now(),
+      user: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar },
+      time: 'এইমাত্র', privacy: privacy || 'public',
+      type: type || 'regular', arabic: arabic || null,
+      content, image: image || null,
+      likes: 0, comments: 0, shares: 0,
+      reactions: [], userReactions: {}, commentsList: [], savedBy: [],
+    };
+    setPosts(prev => [newPost, ...prev]);
+  };
+
+  const deletePost = (postId) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  const toggleLike = (postId, reaction) => {
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const userReactions = { ...(p.userReactions || {}) };
+      const prev_reaction = userReactions[currentUser.id];
+      if (prev_reaction === reaction.label) {
+        delete userReactions[currentUser.id];
+        return { ...p, likes: Math.max(0, p.likes - 1), userReactions };
+      }
+      const likeDelta = prev_reaction ? 0 : 1;
+      userReactions[currentUser.id] = reaction.label;
+      return { ...p, likes: p.likes + likeDelta, userReactions };
+    }));
+  };
+
+  const addComment = (postId, text) => {
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const newComment = {
+        id: Date.now(),
+        user: { name: currentUser.name, avatar: currentUser.avatar },
+        text, time: 'এইমাত্র',
+      };
+      return { ...p, comments: p.comments + 1, commentsList: [...(p.commentsList || []), newComment] };
+    }));
+  };
+
+  const sharePost = (postId) => {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
+  };
+
+  const toggleSave = (postId) => {
+    setSavedPosts(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]);
+  };
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return (
+    <AppContext.Provider value={{
+      currentUser, login, logout, register, updateProfile,
+      posts, addPost, deletePost, toggleLike, addComment, sharePost,
+      savedPosts, toggleSave,
+      notifications, markAllRead, unreadCount,
+      darkMode, setDarkMode,
+      contacts,
+      allUsers,
+      sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
+      isFriend, hasSentRequest, hasReceivedRequest, getUserById,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export const useApp = () => useContext(AppContext);

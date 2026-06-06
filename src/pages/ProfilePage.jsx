@@ -1,0 +1,223 @@
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
+import Post from '../components/Post';
+
+function EditProfileModal({ user, onClose, onSave }) {
+  const [form, setForm] = useState({ name: user.name, bio: user.bio || '', location: user.location || '' });
+  const h = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+      <div className="card p-6 w-full max-w-[440px] rounded-2xl shadow-2xl fade-in">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-bold text-[17px] text-green-700">প্রোফাইল সম্পাদনা করুন</h3>
+          <button onClick={onClose} className="w-9 h-9 rounded-full hover:bg-green-50 flex items-center justify-center text-[20px] text-gray-500">✕</button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-[13px] font-semibold text-green-700 mb-1">নাম</label>
+            <input name="name" value={form.name} onChange={h} className="input-base" />
+          </div>
+          <div>
+            <label className="block text-[13px] font-semibold text-green-700 mb-1">বায়ো</label>
+            <textarea name="bio" value={form.bio} onChange={h} rows={3} className="input-base resize-none" />
+          </div>
+          <div>
+            <label className="block text-[13px] font-semibold text-green-700 mb-1">অবস্থান</label>
+            <input name="location" value={form.location} onChange={h} className="input-base" />
+          </div>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-green-200 text-green-700 font-bold text-[14px] hover:bg-green-50">বাতিল</button>
+          <button onClick={() => { onSave(form); onClose(); }} className="flex-1 py-2.5 rounded-xl bg-green-700 text-white font-bold text-[14px] hover:bg-green-800">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProfilePage() {
+  const { userId } = useParams();
+  const {
+    currentUser, allUsers, posts, updateProfile, savedPosts,
+    isFriend, hasSentRequest, hasReceivedRequest,
+    sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
+  } = useApp();
+  const [tab, setTab] = useState('posts');
+  const [editing, setEditing] = useState(false);
+
+  if (!currentUser) return <div className="card p-8 text-center text-green-600">লগইন প্রয়োজন।</div>;
+
+  const profileUserId = userId ? parseInt(userId) : currentUser.id;
+  const isOwnProfile = profileUserId === currentUser.id;
+  const profileUser = isOwnProfile ? currentUser : allUsers.find(u => u.id === profileUserId);
+
+  if (!profileUser) return (
+    <div className="card p-8 text-center text-green-600">
+      <p className="text-[40px] mb-3">👤</p>
+      <p className="font-bold text-[16px]">ব্যবহারকারী পাওয়া যায়নি।</p>
+    </div>
+  );
+
+  const userPosts = posts.filter(p => p.user.id === profileUser.id);
+  const saved = posts.filter(p => savedPosts.includes(p.id));
+  const friends = allUsers.filter(u => (profileUser.friendIds || []).includes(u.id));
+
+  const tabs = [
+    { key: 'posts', label: `পোস্ট (${userPosts.length})` },
+    ...(isOwnProfile ? [{ key: 'saved', label: `সংরক্ষিত (${saved.length})` }] : []),
+    { key: 'friends', label: `বন্ধু (${friends.length})` },
+    { key: 'about', label: 'পরিচয়' },
+  ];
+
+  const FriendButton = () => {
+    if (isFriend(profileUser.id)) return (
+      <button
+        onClick={() => removeFriend(profileUser.id)}
+        className="px-4 py-2 rounded-xl bg-green-100 text-green-700 font-bold text-[13px] hover:bg-red-50 hover:text-red-600 transition-colors"
+        title="বন্ধুত্ব বাতিল করতে ক্লিক করুন"
+      >
+        👥 বন্ধু ✓
+      </button>
+    );
+    if (hasSentRequest(profileUser.id)) return (
+      <button
+        onClick={() => cancelFriendRequest(profileUser.id)}
+        className="px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 font-bold text-[13px] hover:bg-yellow-200 transition-colors"
+      >
+        ⏳ অনুরোধ পাঠানো হয়েছে
+      </button>
+    );
+    if (hasReceivedRequest(profileUser.id)) return (
+      <button
+        onClick={() => acceptFriend(profileUser.id)}
+        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors"
+      >
+        ✓ অনুরোধ গ্রহণ করুন
+      </button>
+    );
+    return (
+      <button
+        onClick={() => sendFriendRequest(profileUser.id)}
+        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors"
+      >
+        + বন্ধু যোগ করুন
+      </button>
+    );
+  };
+
+  return (
+    <div className="fade-in">
+      {editing && <EditProfileModal user={profileUser} onClose={() => setEditing(false)} onSave={updateProfile} />}
+
+      {/* Cover */}
+      <div className="relative rounded-b-xl overflow-hidden mb-0 shadow-md">
+        <img src={profileUser.coverPhoto || `https://picsum.photos/seed/${profileUser.username}/900/280`}
+          alt="cover" className="w-full h-[220px] sm:h-[280px] object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        {isOwnProfile && (
+          <button
+            onClick={() => setEditing(true)}
+            className="absolute top-3 right-3 bg-white/90 text-green-800 font-bold text-[12px] px-3 py-1.5 rounded-lg shadow hover:bg-white">
+            ✏️ প্রোফাইল সম্পাদনা
+          </button>
+        )}
+      </div>
+
+      {/* Avatar + Info */}
+      <div className="card rounded-t-none px-4 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-14 sm:-mt-16">
+          <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0">
+            <img src={profileUser.avatar} alt={profileUser.name}
+              className="w-full h-full rounded-full border-4 border-white object-cover shadow-lg" />
+            <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white" />
+          </div>
+          <div className="pb-2 flex-1">
+            <h1 className="text-[22px] font-extrabold text-green-800">{profileUser.name}</h1>
+            {profileUser.title && <p className="text-green-600 text-[13px] font-medium">{profileUser.title}</p>}
+            <p className="text-gray-500 text-[13px] mt-1">👥 {profileUser.friends || 0} বন্ধু</p>
+          </div>
+          <div className="flex gap-2 pb-2">
+            {isOwnProfile ? (
+              <button onClick={() => setEditing(true)}
+                className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800">
+                ✏️ সম্পাদনা
+              </button>
+            ) : (
+              <FriendButton />
+            )}
+          </div>
+        </div>
+
+        {profileUser.bio && (
+          <p className="text-[14px] text-gray-600 mt-3 pt-3 border-t border-green-100 whitespace-pre-line">{profileUser.bio}</p>
+        )}
+
+        <div className="flex flex-wrap gap-4 mt-3 text-[13px] text-gray-500">
+          {profileUser.location && <span>📍 {profileUser.location}</span>}
+          {profileUser.joinDate && <span>📅 যোগদান: {profileUser.joinDate}</span>}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="card mt-2 flex overflow-x-auto">
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`flex-1 min-w-[80px] py-3 font-bold text-[13px] border-b-2 transition-colors ${
+              tab === t.key ? 'border-green-700 text-green-700' : 'border-transparent text-gray-500 hover:bg-green-50'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="mt-3 space-y-3">
+        {tab === 'posts' && (
+          userPosts.length === 0
+            ? <div className="card p-8 text-center text-green-600">🕌 এখনো কোনো পোস্ট নেই।</div>
+            : userPosts.map(p => <Post key={p.id} post={p} />)
+        )}
+        {tab === 'saved' && isOwnProfile && (
+          saved.length === 0
+            ? <div className="card p-8 text-center text-green-600">🔖 কোনো সংরক্ষিত পোস্ট নেই।</div>
+            : saved.map(p => <Post key={p.id} post={p} />)
+        )}
+        {tab === 'friends' && (
+          friends.length === 0
+            ? <div className="card p-8 text-center text-green-600">👥 এখনো কোনো বন্ধু নেই।</div>
+            : (
+              <div className="card p-4">
+                <h3 className="font-bold text-[15px] text-green-700 mb-3">বন্ধু তালিকা</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {friends.map(f => (
+                    <Link key={f.id} to={`/profile/${f.id}`}
+                      className="border border-green-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow text-center">
+                      <img src={f.avatar} alt={f.name} className="w-full h-[90px] object-cover" />
+                      <div className="p-2">
+                        <p className="font-bold text-[12px] text-green-800 truncate">{f.name}</p>
+                        <p className="text-[11px] text-gray-500 truncate">{f.title || 'Muslim'}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )
+        )}
+        {tab === 'about' && (
+          <div className="card p-5 space-y-4">
+            <h3 className="font-bold text-[16px] text-green-700 border-b border-green-100 pb-2">পরিচয় তথ্য</h3>
+            <div className="space-y-3 text-[14px]">
+              <div className="flex gap-3"><span className="text-[18px]">👤</span><div><p className="text-gray-500 text-[12px]">নাম</p><p className="font-semibold">{profileUser.name}</p></div></div>
+              <div className="flex gap-3"><span className="text-[18px]">🏷️</span><div><p className="text-gray-500 text-[12px]">Username</p><p className="font-semibold">@{profileUser.username}</p></div></div>
+              {profileUser.location && <div className="flex gap-3"><span className="text-[18px]">📍</span><div><p className="text-gray-500 text-[12px]">অবস্থান</p><p className="font-semibold">{profileUser.location}</p></div></div>}
+              {profileUser.joinDate && <div className="flex gap-3"><span className="text-[18px]">📅</span><div><p className="text-gray-500 text-[12px]">যোগদানের তারিখ</p><p className="font-semibold">{profileUser.joinDate}</p></div></div>}
+              <div className="flex gap-3"><span className="text-[18px]">👥</span><div><p className="text-gray-500 text-[12px]">বন্ধু</p><p className="font-semibold">{profileUser.friends || 0} জন</p></div></div>
+              {profileUser.bio && <div className="flex gap-3"><span className="text-[18px]">📝</span><div><p className="text-gray-500 text-[12px]">বায়ো</p><p className="font-semibold whitespace-pre-line">{profileUser.bio}</p></div></div>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

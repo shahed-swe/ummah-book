@@ -1,0 +1,126 @@
+import { useState } from 'react';
+import { FaBookOpen, FaImage, FaTimes, FaPray } from 'react-icons/fa';
+import { useApp } from '../context/AppContext';
+
+const POST_TYPES = [
+  { key: 'quran', label: 'Quran Ayat', emoji: '📖' },
+  { key: 'hadith', label: 'Hadith', emoji: '📜' },
+  { key: 'dua', label: 'Dua & Dhikr', emoji: '🤲' },
+  { key: 'reminder', label: 'Reminder', emoji: '🌙' },
+];
+
+export default function CreatePost() {
+  const { currentUser, addPost } = useApp();
+  const [modal, setModal] = useState(false);
+  const [text, setText] = useState('');
+  const [arabic, setArabic] = useState('');
+  const [type, setType] = useState('reminder');
+  const [privacy, setPrivacy] = useState('public');
+
+  const handlePost = () => {
+    if (!text.trim()) return;
+    addPost({ content: text, arabic: arabic.trim() || null, type, privacy });
+    setModal(false);
+    setText('');
+    setArabic('');
+    setType('reminder');
+  };
+
+  if (!currentUser) return null;
+
+  return (
+    <>
+      <div className="card p-3">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <p className="text-green-600 text-[13px] font-medium arabic text-right w-full">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</p>
+        </div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative">
+            <img src={currentUser.avatar} alt="me" className="w-10 h-10 rounded-full object-cover border-2 border-green-400" />
+            <span className="absolute -bottom-1 -right-1 text-xs">☪️</span>
+          </div>
+          <button onClick={() => setModal(true)}
+            className="flex-1 bg-green-50 hover:bg-green-100 border border-green-200 rounded-full px-4 py-2.5 text-left text-green-600 text-[14px] transition-colors">
+            আপনার মনে কী আছে, {currentUser.name.split(' ')[0]}? শেয়ার করুন... ✨
+          </button>
+        </div>
+        <hr className="border-green-100 mb-2" />
+        <div className="flex items-center justify-around">
+          {[
+            { icon: FaBookOpen, label: 'Quran Ayat', color: 'text-green-600' },
+            { icon: FaImage, label: 'Photo', color: 'text-amber-500' },
+            { icon: FaPray, label: 'Dua', color: 'text-green-600' },
+          ].map(({ icon: Icon, label, color }) => (
+            <button key={label} onClick={() => setModal(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-50 transition-colors flex-1 justify-center">
+              <Icon className={`${color} text-lg`} />
+              <span className="text-green-700 font-semibold text-[13px] hidden sm:block">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {modal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3">
+          <div className="card w-full max-w-[500px] rounded-2xl shadow-2xl overflow-hidden fade-in">
+            {/* Modal header */}
+            <div className="relative flex items-center justify-center p-4 border-b border-green-100" style={{ background: 'linear-gradient(135deg, #1a5c2a, #2d7a3a)' }}>
+              <h2 className="text-[17px] font-bold text-white">ইসলামিক কন্টেন্ট শেয়ার করুন</h2>
+              <button onClick={() => setModal(false)}
+                className="absolute right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                <FaTimes className="text-white text-sm" />
+              </button>
+            </div>
+
+            <div className="p-4">
+              {/* User info */}
+              <div className="flex items-center gap-2 mb-3">
+                <img src={currentUser.avatar} alt="me" className="w-10 h-10 rounded-full object-cover border-2 border-green-400" />
+                <div>
+                  <p className="font-bold text-[15px]">{currentUser.name}</p>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setPrivacy(p => p === 'public' ? 'friends' : 'public')}
+                      className="flex items-center gap-1 bg-green-100 border border-green-300 rounded-md px-2 py-0.5 text-[12px] font-semibold text-green-700">
+                      {privacy === 'public' ? '🌍 Public' : '👥 Friends'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Post type */}
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {POST_TYPES.map(t => (
+                  <button key={t.key} onClick={() => setType(t.key)}
+                    className={`px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all ${
+                      type === t.key ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                    }`}>
+                    {t.emoji} {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Arabic input */}
+              <div className="mb-2">
+                <input value={arabic} onChange={e => setArabic(e.target.value)}
+                  placeholder="عربي نص (Arabic text — optional)"
+                  className="input-base arabic text-right text-[16px]" />
+              </div>
+
+              {/* Content */}
+              <textarea autoFocus value={text} onChange={e => setText(e.target.value)}
+                placeholder="আল্লাহর কথা শেয়ার করুন, Quran আয়াত বা Hadith লিখুন... 🤲"
+                className="w-full outline-none resize-none text-[15px] placeholder-green-400 min-h-[100px] leading-relaxed" rows={4} />
+            </div>
+
+            <div className="px-4 pb-4">
+              <button onClick={handlePost} disabled={!text.trim()}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                শেয়ার করুন · ইনশাআল্লাহ 🕌
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

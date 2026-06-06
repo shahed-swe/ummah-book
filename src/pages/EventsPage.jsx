@@ -1,0 +1,95 @@
+import { useState } from 'react';
+import { islamicEvents } from '../data/initialData';
+
+export default function EventsPage() {
+  const [events, setEvents] = useState(
+    islamicEvents.map(e => ({ ...e, status: null }))
+  );
+
+  const setStatus = (id, status) => {
+    setEvents(prev => prev.map(e => e.id === id
+      ? { ...e, status: e.status === status ? null : status }
+      : e
+    ));
+  };
+
+  const going = events.filter(e => e.status === 'going');
+  const interested = events.filter(e => e.status === 'interested');
+
+  return (
+    <div className="fade-in space-y-3">
+      {/* Header */}
+      <div className="card p-4">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-[28px]">📅</span>
+          <div>
+            <h2 className="font-bold text-[18px] text-green-800">ইসলামিক ইভেন্ট</h2>
+            <p className="text-[12px] text-gray-500">{events.length}টি আসন্ন ইভেন্ট</p>
+          </div>
+        </div>
+        <div className="flex gap-4 text-[13px] mt-3">
+          <div className="flex items-center gap-1.5 text-green-700 font-semibold">
+            <span className="text-[16px]">✅</span> {going.length} যাচ্ছেন
+          </div>
+          <div className="flex items-center gap-1.5 text-amber-600 font-semibold">
+            <span className="text-[16px]">⭐</span> {interested.length} আগ্রহী
+          </div>
+        </div>
+      </div>
+
+      {/* Events grid */}
+      <div className="space-y-3">
+        {events.map(ev => (
+          <div key={ev.id} className="card overflow-hidden hover:shadow-lg transition-all fade-in">
+            <div className={`bg-gradient-to-r ${ev.color} p-4`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-[36px]">{ev.emoji}</span>
+                  <div>
+                    <h3 className="font-bold text-white text-[16px]">{ev.title}</h3>
+                    <span className="text-[10px] bg-white/25 text-white px-2 py-0.5 rounded-full font-semibold">{ev.type}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-bold text-[15px]">{ev.date}</p>
+                  <p className="text-green-100 text-[12px]">{ev.time}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="flex items-center gap-2 text-[13px] text-gray-500 mb-3">
+                <span>📍</span>
+                <span>{ev.location}</span>
+              </div>
+              <div className="flex gap-4 text-[12px] text-gray-500 mb-4">
+                <span>✅ {ev.going.toLocaleString()} জন যাচ্ছেন</span>
+                <span>⭐ {ev.interested.toLocaleString()} জন আগ্রহী</span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setStatus(ev.id, 'going')}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all ${
+                    ev.status === 'going'
+                      ? 'bg-green-700 text-white'
+                      : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                  }`}>
+                  {ev.status === 'going' ? '✅ যাচ্ছেন' : '✅ যাব'}
+                </button>
+                <button onClick={() => setStatus(ev.id, 'interested')}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all ${
+                    ev.status === 'interested'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                  }`}>
+                  {ev.status === 'interested' ? '⭐ আগ্রহী' : '⭐ আগ্রহী'}
+                </button>
+                <button className="px-3 py-2.5 rounded-xl bg-gray-50 text-gray-600 border border-gray-200 text-[13px] hover:bg-gray-100">
+                  🔁
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
