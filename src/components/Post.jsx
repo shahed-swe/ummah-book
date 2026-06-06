@@ -179,49 +179,52 @@ export default function Post({ post }) {
 
       <hr className="border-green-100 mx-4" />
 
-      {/* Reaction emojis — always visible, tap to react */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-green-50">
-        <div className="flex items-center gap-1">
-          {REACTIONS.map(r => (
-            <button
-              key={r.label}
-              onClick={() => handleReact(r)}
-              title={r.label}
-              className={`text-[22px] leading-none p-1 rounded-full transition-all active:scale-90 ${
-                myReaction === r.label
-                  ? 'bg-green-100 scale-110 ring-2 ring-green-300'
-                  : 'hover:bg-green-50 hover:scale-125'
-              }`}>
-              {r.emoji}
-            </button>
-          ))}
-        </div>
-        {myReaction && (
-          <span className="text-[11px] text-green-600 font-semibold">{myReaction}</span>
-        )}
-      </div>
+      {/* Action buttons — Facebook style */}
+      <div className="flex items-center px-2 py-1">
 
-      {/* Action buttons */}
-      <div className="flex items-center px-2 py-0.5">
+        {/* Dua / React */}
+        <button
+          onClick={() => handleReact(REACTIONS[0])}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors active:scale-95 ${
+            myReaction ? 'bg-green-50' : 'hover:bg-green-50'
+          }`}>
+          <span className="text-[20px] leading-none">
+            {myReaction ? REACTIONS.find(r => r.label === myReaction)?.emoji || '🤲' : '🤲'}
+          </span>
+          <div className="text-left leading-tight">
+            <p className={`font-bold text-[12px] ${myReaction ? 'text-green-600' : 'text-gray-600'}`}>
+              {myReaction || 'Dua'}
+            </p>
+            <p className={`text-[10px] ${myReaction ? 'text-green-500' : 'text-gray-400'}`}>
+              {myReaction ? 'দেওয়া হয়েছে' : "দু'আ"}
+            </p>
+          </div>
+        </button>
+
+        <div className="w-px h-6 bg-green-100" />
+
         {/* Comment */}
         <button onClick={() => setShowComments(!showComments)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-green-50 transition-colors">
-          <FaRegComment className="text-green-600 text-lg" />
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-green-50 transition-colors active:scale-95">
+          <FaRegComment className="text-[18px] text-gray-500" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[11px] text-green-700">Comment</p>
-            <p className="text-[10px] text-green-500">মন্তব্য</p>
+            <p className="font-bold text-[12px] text-gray-600">Comment</p>
+            <p className="text-[10px] text-gray-400">মন্তব্য</p>
           </div>
         </button>
 
+        <div className="w-px h-6 bg-green-100" />
+
         {/* Share */}
-        <button onClick={() => { sharePost(post.id); }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-green-50 transition-colors">
-          <FaShare className="text-green-600 text-lg" />
+        <button onClick={() => sharePost(post.id)}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-green-50 transition-colors active:scale-95">
+          <FaShare className="text-[18px] text-gray-500" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[11px] text-green-700">Share</p>
-            <p className="text-[10px] text-green-500">শেয়ার</p>
+            <p className="font-bold text-[12px] text-gray-600">Share</p>
+            <p className="text-[10px] text-gray-400">শেয়ার</p>
           </div>
         </button>
+
       </div>
 
       {/* Comments */}
