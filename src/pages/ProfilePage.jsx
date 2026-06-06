@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const {
     currentUser, allUsers, posts, updateProfile, savedPosts,
     isFriend, hasSentRequest, hasReceivedRequest,
-    sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
+    sendFriendRequest, cancelFriendRequest, declineFriendRequest, acceptFriend, removeFriend,
   } = useApp();
   const [tab, setTab] = useState('posts');
   const [editing, setEditing] = useState(false);
@@ -118,13 +118,20 @@ export default function ProfilePage() {
       </button>
     );
     if (hasReceivedRequest(profileUser.id)) return (
-      <button
-        onClick={() => acceptFriend(profileUser.id)}
-        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors leading-tight"
-      >
-        <p>✓ Accept Request</p>
-        <p className="text-[11px] opacity-80">অনুরোধ গ্রহণ করুন</p>
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => acceptFriend(profileUser.id)}
+          className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors leading-tight">
+          <p>✓ Confirm</p>
+          <p className="text-[11px] opacity-80">গ্রহণ করুন</p>
+        </button>
+        <button
+          onClick={() => declineFriendRequest(profileUser.id)}
+          className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-[13px] hover:bg-red-50 hover:text-red-600 transition-colors leading-tight">
+          <p>✗ Delete</p>
+          <p className="text-[11px] opacity-80">বাতিল</p>
+        </button>
+      </div>
     );
     return (
       <button

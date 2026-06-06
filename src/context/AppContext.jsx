@@ -145,6 +145,11 @@ export function AppProvider({ children }) {
 
   // Friend system
   const sendFriendRequest = (toUserId) => {
+    // Guard: skip if already friend, already sent, or already received
+    if (!currentUser) return;
+    if ((currentUser.friendIds || []).includes(toUserId)) return;
+    if ((currentUser.sentRequests || []).includes(toUserId)) return;
+    if ((currentUser.receivedRequests || []).includes(toUserId)) return;
     setAllUsers(prev => prev.map(u => {
       if (u.id === currentUserId) return { ...u, sentRequests: [...(u.sentRequests || []), toUserId] };
       if (u.id === toUserId) return { ...u, receivedRequests: [...(u.receivedRequests || []), currentUserId] };
@@ -152,10 +157,20 @@ export function AppProvider({ children }) {
     }));
   };
 
+  // Called by the SENDER to cancel their own outgoing request
   const cancelFriendRequest = (toUserId) => {
     setAllUsers(prev => prev.map(u => {
       if (u.id === currentUserId) return { ...u, sentRequests: (u.sentRequests || []).filter(id => id !== toUserId) };
       if (u.id === toUserId) return { ...u, receivedRequests: (u.receivedRequests || []).filter(id => id !== currentUserId) };
+      return u;
+    }));
+  };
+
+  // Called by the RECEIVER to decline/reject an incoming request
+  const declineFriendRequest = (fromUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, receivedRequests: (u.receivedRequests || []).filter(id => id !== fromUserId) };
+      if (u.id === fromUserId) return { ...u, sentRequests: (u.sentRequests || []).filter(id => id !== currentUserId) };
       return u;
     }));
   };
@@ -245,7 +260,7 @@ export function AppProvider({ children }) {
       notifications, markAllRead, unreadCount,
       darkMode, setDarkMode,
       contacts, allUsers,
-      sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
+      sendFriendRequest, cancelFriendRequest, declineFriendRequest, acceptFriend, removeFriend,
       isFriend, hasSentRequest, hasReceivedRequest, getUserById,
       pendingRequestsCount,
     }}>

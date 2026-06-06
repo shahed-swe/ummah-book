@@ -4,11 +4,16 @@ import { FaTimes } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 
 export default function FriendSuggestions() {
-  const { currentUser, allUsers, isFriend, hasSentRequest, hasReceivedRequest, sendFriendRequest, cancelFriendRequest, acceptFriend } = useApp();
+  const {
+    currentUser, allUsers,
+    isFriend, hasSentRequest, hasReceivedRequest,
+    sendFriendRequest, cancelFriendRequest, declineFriendRequest, acceptFriend,
+  } = useApp();
   const [dismissed, setDismissed] = useState([]);
 
   if (!currentUser) return null;
 
+  // Show everyone who is not already a friend and not dismissed
   const suggestions = allUsers.filter(u =>
     u.id !== currentUser.id &&
     !isFriend(u.id) &&
@@ -27,51 +32,63 @@ export default function FriendSuggestions() {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {suggestions.slice(0, 6).map((person) => (
-          <div key={person.id} className="border border-green-100 rounded-xl overflow-hidden relative group hover:shadow-md transition-shadow">
-            <button
-              onClick={() => setDismissed(prev => [...prev, person.id])}
-              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 hover:bg-white flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-gray-100"
-            >
-              <FaTimes className="text-gray-500 text-[10px]" />
-            </button>
+        {suggestions.slice(0, 6).map((person) => {
+          const received = hasReceivedRequest(person.id);
+          const sent     = hasSentRequest(person.id);
 
-            <Link to={`/profile/${person.id}`}>
-              <img src={person.avatar} alt={person.name}
-                className="w-full h-[100px] object-cover hover:opacity-90 transition-opacity" />
-            </Link>
-
-            <div className="p-2 text-center">
-              <Link to={`/profile/${person.id}`}>
-                <p className="font-bold text-[12px] text-green-900 leading-tight truncate hover:underline">{person.name}</p>
-              </Link>
-              <p className="text-[11px] text-gray-500 mt-0.5 truncate">{person.title || 'Muslim'}</p>
-
-              {hasReceivedRequest(person.id) ? (
+          return (
+            <div key={person.id} className="border border-green-100 rounded-xl overflow-hidden relative group hover:shadow-md transition-shadow">
+              {/* Dismiss button */}
+              {!received && !sent && (
                 <button
-                  onClick={() => acceptFriend(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] transition-colors leading-tight">
-                  <p>✓ Accept</p>
-                  <p className="opacity-80">গ্রহণ করুন</p>
-                </button>
-              ) : hasSentRequest(person.id) ? (
-                <button
-                  onClick={() => cancelFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[10px] transition-colors hover:bg-yellow-200 leading-tight">
-                  <p>⏳ Pending</p>
-                  <p className="opacity-80">অনুরোধ পাঠানো</p>
-                </button>
-              ) : (
-                <button
-                  onClick={() => sendFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[10px] transition-colors leading-tight">
-                  <p>+ Add Friend</p>
-                  <p className="opacity-80">বন্ধু যোগ করুন</p>
+                  onClick={() => setDismissed(prev => [...prev, person.id])}
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 hover:bg-white flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-gray-100">
+                  <FaTimes className="text-gray-500 text-[10px]" />
                 </button>
               )}
+
+              <Link to={`/profile/${person.id}`}>
+                <img src={person.avatar} alt={person.name}
+                  className="w-full h-[100px] object-cover hover:opacity-90 transition-opacity" />
+              </Link>
+
+              <div className="p-2 text-center">
+                <Link to={`/profile/${person.id}`}>
+                  <p className="font-bold text-[12px] text-green-900 leading-tight truncate hover:underline">{person.name}</p>
+                </Link>
+                <p className="text-[11px] text-gray-500 mt-0.5 truncate">{person.title || 'Muslim'}</p>
+
+                {received ? (
+                  // They sent ME a request — show Accept + Decline
+                  <div className="flex flex-col gap-1 mt-2">
+                    <button onClick={() => acceptFriend(person.id)}
+                      className="w-full py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[10px] transition-colors">
+                      ✓ Confirm · গ্রহণ
+                    </button>
+                    <button onClick={() => declineFriendRequest(person.id)}
+                      className="w-full py-1.5 rounded-lg bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 font-bold text-[10px] transition-colors">
+                      Delete · বাতিল
+                    </button>
+                  </div>
+                ) : sent ? (
+                  // I sent THEM a request — show Cancel
+                  <button onClick={() => cancelFriendRequest(person.id)}
+                    className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[10px] transition-colors hover:bg-yellow-200 leading-tight">
+                    <p>⏳ Pending</p>
+                    <p className="opacity-80">অনুরোধ পাঠানো</p>
+                  </button>
+                ) : (
+                  // No request — show Add Friend
+                  <button onClick={() => sendFriendRequest(person.id)}
+                    className="w-full mt-2 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[10px] transition-colors leading-tight">
+                    <p>+ Add Friend</p>
+                    <p className="opacity-80">বন্ধু যোগ করুন</p>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
