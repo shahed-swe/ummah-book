@@ -130,10 +130,9 @@ export default function LoginPage() {
           {/* Demo accounts */}
           <div className="mt-5 pt-4 border-t border-green-100">
             <p className="text-[12px] text-green-600 font-semibold text-center mb-3">🎯 Demo Account দিয়ে চেষ্টা করুন</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { label: 'Shahaly', u: 'shahaly', p: '123456' },
-                { label: 'Abdullah', u: 'abdullah', p: '123456' },
                 { label: 'Admin', u: 'admin', p: 'admin' },
               ].map(({ label, u, p }) => (
                 <button key={u} onClick={() => quickLogin(u, p)}
