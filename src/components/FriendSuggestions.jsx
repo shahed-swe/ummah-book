@@ -21,8 +21,8 @@ export default function FriendSuggestions() {
     <div className="card p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-[16px] font-bold text-green-800">আপনি হয়তো চেনেন</h3>
-          <p className="text-[12px] text-green-600">আপনার মুসলিম কমিউনিটির সদস্যরা</p>
+          <h3 className="text-[15px] font-bold text-green-800">People You May Know</h3>
+          <p className="text-[12px] text-green-600">আপনি হয়তো চেনেন</p>
         </div>
       </div>
 
@@ -50,14 +50,16 @@ export default function FriendSuggestions() {
               {hasSentRequest(person.id) ? (
                 <button
                   onClick={() => cancelFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[11px] transition-colors hover:bg-yellow-200">
-                  ⏳ অনুরোধ পাঠানো
+                  className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[10px] transition-colors hover:bg-yellow-200 leading-tight">
+                  <p>⏳ Pending</p>
+                  <p className="opacity-80">অনুরোধ পাঠানো</p>
                 </button>
               ) : (
                 <button
                   onClick={() => sendFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[11px] transition-colors">
-                  + বন্ধু যোগ করুন
+                  className="w-full mt-2 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[10px] transition-colors leading-tight">
+                  <p>+ Add Friend</p>
+                  <p className="opacity-80">বন্ধু যোগ করুন</p>
                 </button>
               )}
             </div>

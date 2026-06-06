@@ -6,11 +6,11 @@ import NotificationPanel from './NotificationPanel';
 import ProfileDropdown from './ProfileDropdown';
 
 const navLinks = [
-  { icon: FaHome, label: 'Home', path: '/' },
-  { icon: FaUsers, label: 'Groups', path: '/groups' },
-  { icon: FaBookOpen, label: 'Quran', path: '/quran' },
-  { icon: FaMosque, label: 'Profile', path: '/profile' },
-  { icon: FaStar, label: 'Events', path: '/events' },
+  { icon: FaHome,     en: 'Home',    bn: 'হোম',      path: '/' },
+  { icon: FaUsers,    en: 'Groups',  bn: 'গ্রুপ',    path: '/groups' },
+  { icon: FaBookOpen, en: 'Quran',   bn: 'কুরআন',   path: '/quran' },
+  { icon: FaMosque,   en: 'Profile', bn: 'প্রোফাইল', path: '/profile' },
+  { icon: FaStar,     en: 'Events',  bn: 'ইভেন্ট',   path: '/events' },
 ];
 
 export default function Navbar() {
@@ -32,13 +32,9 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // search is cosmetic for now — future enhancement
-  };
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-[56px] flex items-center shadow-md" style={{ background: 'linear-gradient(135deg, #1a5c2a 0%, #2d7a3a 100%)' }}>
+    <nav className="fixed top-0 left-0 right-0 z-50 h-[56px] flex items-center shadow-md"
+      style={{ background: 'linear-gradient(135deg, #1a5c2a 0%, #2d7a3a 100%)' }}>
       <div className="flex items-center justify-between w-full px-4">
 
         {/* Left — Logo + Search */}
@@ -50,24 +46,27 @@ export default function Navbar() {
               <p className="text-green-200 text-[10px] leading-none arabic">بِسْمِ اللَّهِ</p>
             </div>
           </button>
-          <form onSubmit={handleSearch} className="hidden md:flex items-center bg-[#ffffff20] hover:bg-[#ffffff30] rounded-full px-3 py-1.5 gap-2 ml-2 w-[180px] transition-colors">
+          <form onSubmit={e => e.preventDefault()}
+            className="hidden md:flex items-center bg-[#ffffff20] hover:bg-[#ffffff30] rounded-full px-3 py-1.5 gap-2 ml-2 w-[190px] transition-colors">
             <FaSearch className="text-green-100 text-sm flex-shrink-0" />
-            <input value={search} onChange={e => setSearch(e.target.value)} type="text" placeholder="Search..."
+            <input value={search} onChange={e => setSearch(e.target.value)} type="text"
+              placeholder="Search / খুঁজুন..."
               className="bg-transparent outline-none text-sm w-full placeholder-green-200 text-white" />
           </form>
         </div>
 
         {/* Center — Nav links */}
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map(({ icon: Icon, label, path }) => {
+          {navLinks.map(({ icon: Icon, en, bn, path }) => {
             const active = location.pathname === path;
             return (
-              <button key={label} onClick={() => navigate(path)} title={label}
-                className={`relative flex flex-col items-center justify-center h-[48px] w-[80px] rounded-lg transition-all text-green-100 hover:bg-white/10 ${
+              <button key={en} onClick={() => navigate(path)} title={`${en} / ${bn}`}
+                className={`relative flex flex-col items-center justify-center h-[48px] w-[88px] rounded-lg transition-all text-green-100 hover:bg-white/10 ${
                   active ? 'bg-white/15 border-b-[3px] border-yellow-400 text-yellow-300' : ''
                 }`}>
-                <Icon className="text-[20px]" />
-                <span className="text-[10px] mt-0.5">{label}</span>
+                <Icon className="text-[18px]" />
+                <span className="text-[9px] mt-0.5 font-bold">{en}</span>
+                <span className="text-[8px] opacity-80">{bn}</span>
               </button>
             );
           })}

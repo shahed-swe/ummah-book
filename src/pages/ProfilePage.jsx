@@ -74,34 +74,38 @@ export default function ProfilePage() {
     if (isFriend(profileUser.id)) return (
       <button
         onClick={() => removeFriend(profileUser.id)}
-        className="px-4 py-2 rounded-xl bg-green-100 text-green-700 font-bold text-[13px] hover:bg-red-50 hover:text-red-600 transition-colors"
-        title="বন্ধুত্ব বাতিল করতে ক্লিক করুন"
+        className="px-4 py-2 rounded-xl bg-green-100 text-green-700 font-bold text-[13px] hover:bg-red-50 hover:text-red-600 transition-colors leading-tight"
+        title="Click to unfriend / বন্ধুত্ব বাতিল করতে ক্লিক করুন"
       >
-        👥 বন্ধু ✓
+        <p>👥 Friends ✓</p>
+        <p className="text-[11px] opacity-80">বন্ধু</p>
       </button>
     );
     if (hasSentRequest(profileUser.id)) return (
       <button
         onClick={() => cancelFriendRequest(profileUser.id)}
-        className="px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 font-bold text-[13px] hover:bg-yellow-200 transition-colors"
+        className="px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 font-bold text-[13px] hover:bg-yellow-200 transition-colors leading-tight"
       >
-        ⏳ অনুরোধ পাঠানো হয়েছে
+        <p>⏳ Pending</p>
+        <p className="text-[11px] opacity-80">অনুরোধ পাঠানো</p>
       </button>
     );
     if (hasReceivedRequest(profileUser.id)) return (
       <button
         onClick={() => acceptFriend(profileUser.id)}
-        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors"
+        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors leading-tight"
       >
-        ✓ অনুরোধ গ্রহণ করুন
+        <p>✓ Accept Request</p>
+        <p className="text-[11px] opacity-80">অনুরোধ গ্রহণ করুন</p>
       </button>
     );
     return (
       <button
         onClick={() => sendFriendRequest(profileUser.id)}
-        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors"
+        className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 transition-colors leading-tight"
       >
-        + বন্ধু যোগ করুন
+        <p>+ Add Friend</p>
+        <p className="text-[11px] opacity-80">বন্ধু যোগ করুন</p>
       </button>
     );
   };
@@ -140,8 +144,9 @@ export default function ProfilePage() {
           <div className="flex gap-2 pb-2">
             {isOwnProfile ? (
               <button onClick={() => setEditing(true)}
-                className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800">
-                ✏️ সম্পাদনা
+                className="px-4 py-2 rounded-xl bg-green-700 text-white font-bold text-[13px] hover:bg-green-800 leading-tight">
+                <p>✏️ Edit Profile</p>
+                <p className="text-[11px] opacity-80">সম্পাদনা</p>
               </button>
             ) : (
               <FriendButton />

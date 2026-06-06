@@ -4,13 +4,13 @@ import { FaUsers, FaBookOpen, FaMosque, FaStar, FaHeart, FaChevronDown, FaChevro
 import { useApp } from '../context/AppContext';
 
 const navItems = [
-  { icon: FaUsers,    label: 'গ্রুপসমূহ',      path: '/groups' },
-  { icon: FaBookOpen, label: 'কুরআন ও হাদিস',  path: '/quran' },
-  { icon: FaMosque,   label: 'প্রোফাইল',        path: '/profile' },
-  { icon: FaPray,     label: 'নামাজের সময়',    path: null },
-  { icon: FaStar,     label: 'ইভেন্টসমূহ',      path: '/events' },
-  { icon: FaHeart,    label: 'সদকা ও দান',      path: null },
-  { icon: FaGlobe,    label: 'উম্মাহ ওয়ার্ল্ড', path: null },
+  { icon: FaUsers,    en: 'Groups',       bn: 'গ্রুপসমূহ',      path: '/groups' },
+  { icon: FaBookOpen, en: 'Quran',        bn: 'কুরআন ও হাদিস',  path: '/quran' },
+  { icon: FaMosque,   en: 'Profile',      bn: 'প্রোফাইল',        path: '/profile' },
+  { icon: FaPray,     en: 'Prayer Times', bn: 'নামাজের সময়',    path: null },
+  { icon: FaStar,     en: 'Events',       bn: 'ইভেন্টসমূহ',      path: '/events' },
+  { icon: FaHeart,    en: 'Sadaqah',      bn: 'সদকা ও দান',      path: null },
+  { icon: FaGlobe,    en: 'Ummah World',  bn: 'উম্মাহ ওয়ার্ল্ড', path: null },
 ];
 
 const groups = [
@@ -53,10 +53,10 @@ export default function LeftSidebar() {
         </div>
 
         {/* Nav */}
-        {visible.map(({ icon: Icon, label, path }) => {
+        {visible.map(({ icon: Icon, en, bn, path }) => {
           const active = path && location.pathname === path;
           return (
-            <button key={label}
+            <button key={en}
               onClick={() => { if (path) navigate(path); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors text-left ${
                 active ? 'bg-green-100 text-green-700' : 'hover:bg-green-50'
@@ -64,7 +64,10 @@ export default function LeftSidebar() {
               <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-600' : 'bg-green-100'}`}>
                 <Icon className={`text-[16px] ${active ? 'text-white' : 'text-green-700'}`} />
               </div>
-              <span className="font-medium text-[14px]">{label}</span>
+              <div className="leading-tight">
+                <p className="font-bold text-[13px] text-green-900">{en}</p>
+                <p className="text-[11px] text-green-600">{bn}</p>
+              </div>
             </button>
           );
         })}
@@ -74,13 +77,19 @@ export default function LeftSidebar() {
           <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
             {showMore ? <FaChevronUp className="text-green-700 text-sm" /> : <FaChevronDown className="text-green-700 text-sm" />}
           </div>
-          <span className="font-medium text-[14px] text-gray-700">{showMore ? 'কম দেখুন' : 'আরো দেখুন'}</span>
+          <div className="leading-tight">
+            <p className="font-bold text-[13px] text-green-900">{showMore ? 'Show Less' : 'Show More'}</p>
+            <p className="text-[11px] text-green-600">{showMore ? 'কম দেখুন' : 'আরো দেখুন'}</p>
+          </div>
         </button>
 
         <hr className="border-green-100 my-3" />
 
         {/* Groups */}
-        <p className="px-2 py-1 text-[15px] font-bold text-green-800 mb-2">ইসলামিক গ্রুপ</p>
+        <div className="mb-2 px-2">
+          <p className="text-[14px] font-bold text-green-800">Islamic Groups</p>
+          <p className="text-[11px] text-green-600">ইসলামিক গ্রুপ</p>
+        </div>
         {groups.map((g) => (
           <button key={g.name} onClick={() => navigate('/groups')}
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-green-50 transition-colors text-left mb-1">
@@ -94,7 +103,7 @@ export default function LeftSidebar() {
 
         <hr className="border-green-100 my-3" />
         <div className="px-2 flex flex-wrap gap-1">
-          {['গোপনীয়তা', 'শর্তাবলি', 'আমাদের সম্পর্কে'].map((item) => (
+          {['Privacy · গোপনীয়তা', 'Terms · শর্তাবলি', 'About · সম্পর্কে'].map((item) => (
             <span key={item} className="text-[11px] text-green-600 cursor-pointer hover:underline">{item} ·</span>
           ))}
           <span className="text-[11px] text-green-600">UmmahBook © 2025</span>

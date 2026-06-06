@@ -30,17 +30,21 @@ export default function GroupsPage() {
         <div className="flex items-center gap-3 mb-3">
           <span className="text-[28px]">👥</span>
           <div>
-            <h2 className="font-bold text-[18px] text-green-800">ইসলামিক গ্রুপ</h2>
-            <p className="text-[12px] text-gray-500">{groups.length}টি গ্রুপ · {joined.length}টিতে যোগ দিয়েছেন</p>
+            <h2 className="font-bold text-[18px] text-green-800">Islamic Groups</h2>
+            <p className="text-[13px] text-green-600 font-medium">ইসলামিক গ্রুপ</p>
+            <p className="text-[12px] text-gray-500">{groups.length} groups · {joined.length} joined · {joined.length}টিতে যোগ দিয়েছেন</p>
           </div>
         </div>
         <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="🔍 গ্রুপ খুঁজুন..." className="input-base" />
+          placeholder="🔍 Search groups / গ্রুপ খুঁজুন..." className="input-base" />
       </div>
 
       {joined.length > 0 && (
         <div className="card p-4">
-          <h3 className="font-bold text-[15px] text-green-700 mb-3">✅ আপনার গ্রুপ</h3>
+          <div className="mb-3">
+            <h3 className="font-bold text-[15px] text-green-700">✅ Your Groups</h3>
+            <p className="text-[12px] text-green-500">আপনার গ্রুপ</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             {joined.map(g => (
               <div key={g.id} className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
@@ -59,17 +63,25 @@ export default function GroupsPage() {
               <img src={g.img} alt={g.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-[14px] text-green-800 truncate">{g.name}</h3>
-                <p className="text-[12px] text-gray-500">{(g.members / 1000).toFixed(1)}k সদস্য · {g.posts} পোস্ট</p>
+                <p className="text-[12px] text-gray-500">{(g.members / 1000).toFixed(1)}k members · সদস্য · {g.posts} posts · পোস্ট</p>
               </div>
             </div>
             <p className="text-[12px] text-gray-500 mt-2 line-clamp-2">{g.desc}</p>
             <button onClick={() => toggle(g.id)}
-              className={`mt-3 w-full py-2 rounded-xl font-bold text-[13px] transition-all ${
+              className={`mt-3 w-full py-2 rounded-xl font-bold text-[13px] transition-all leading-tight ${
                 g.joined
                   ? 'bg-green-50 text-green-700 border border-green-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
                   : 'bg-green-700 text-white hover:bg-green-800'
               }`}>
-              {g.joined ? '✅ যোগ দিয়েছেন' : '➕ যোগ দিন'}
+              {g.joined ? (
+                <>
+                  <span>✅ Joined · যোগ দিয়েছেন</span>
+                </>
+              ) : (
+                <>
+                  <span>➕ Join · যোগ দিন</span>
+                </>
+              )}
             </button>
           </div>
         ))}
@@ -78,7 +90,8 @@ export default function GroupsPage() {
       {filtered.length === 0 && (
         <div className="card p-8 text-center text-green-600">
           <p className="text-[32px] mb-2">🔍</p>
-          <p>কোনো গ্রুপ পাওয়া যায়নি।</p>
+          <p className="font-bold">No groups found</p>
+          <p className="text-[13px] mt-1">কোনো গ্রুপ পাওয়া যায়নি।</p>
         </div>
       )}
     </div>

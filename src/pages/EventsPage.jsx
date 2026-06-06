@@ -35,16 +35,25 @@ export default function EventsPage() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-[28px]">📅</span>
           <div>
-            <h2 className="font-bold text-[18px] text-green-800">ইসলামিক ইভেন্ট</h2>
-            <p className="text-[12px] text-gray-500">{events.length}টি আসন্ন ইভেন্ট</p>
+            <h2 className="font-bold text-[18px] text-green-800">Islamic Events</h2>
+            <p className="text-[13px] text-green-600 font-medium">ইসলামিক ইভেন্ট</p>
+            <p className="text-[12px] text-gray-500">{events.length} upcoming events · আসন্ন ইভেন্ট</p>
           </div>
         </div>
         <div className="flex gap-4 text-[13px] mt-3">
           <div className="flex items-center gap-1.5 text-green-700 font-semibold">
-            <span className="text-[16px]">✅</span> {going.length} যাচ্ছেন
+            <span className="text-[16px]">✅</span>
+            <div>
+              <span className="font-bold">{going.length} Going</span>
+              <span className="text-[11px] text-green-500 ml-1">· যাচ্ছেন</span>
+            </div>
           </div>
           <div className="flex items-center gap-1.5 text-amber-600 font-semibold">
-            <span className="text-[16px]">⭐</span> {interested.length} আগ্রহী
+            <span className="text-[16px]">⭐</span>
+            <div>
+              <span className="font-bold">{interested.length} Interested</span>
+              <span className="text-[11px] text-amber-400 ml-1">· আগ্রহী</span>
+            </div>
           </div>
         </div>
       </div>
@@ -72,25 +81,27 @@ export default function EventsPage() {
                 <span>📍</span><span>{ev.location}</span>
               </div>
               <div className="flex gap-4 text-[12px] text-gray-500 mb-4">
-                <span>✅ {ev.going.toLocaleString()} জন যাচ্ছেন</span>
-                <span>⭐ {ev.interested.toLocaleString()} জন আগ্রহী</span>
+                <span>✅ {ev.going.toLocaleString()} going · যাচ্ছেন</span>
+                <span>⭐ {ev.interested.toLocaleString()} interested · আগ্রহী</span>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => respond(ev.id, 'going')}
-                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all leading-tight ${
                     ev.status === 'going'
                       ? 'bg-green-700 text-white'
                       : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
                   }`}>
-                  {ev.status === 'going' ? '✅ যাচ্ছেন' : '✅ যাব'}
+                  <p>✅ {ev.status === 'going' ? 'Going' : 'Going?'}</p>
+                  <p className="text-[11px] opacity-80">{ev.status === 'going' ? 'যাচ্ছেন' : 'যাব'}</p>
                 </button>
                 <button onClick={() => respond(ev.id, 'interested')}
-                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-[13px] transition-all leading-tight ${
                     ev.status === 'interested'
                       ? 'bg-amber-500 text-white'
                       : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
                   }`}>
-                  ⭐ আগ্রহী
+                  <p>⭐ Interested</p>
+                  <p className="text-[11px] opacity-80">আগ্রহী</p>
                 </button>
                 <button className="px-3 py-2.5 rounded-xl bg-gray-50 text-gray-600 border border-gray-200 text-[13px] hover:bg-gray-100">
                   🔁

@@ -8,8 +8,8 @@ function PrayerCard() {
     <div className="rounded-xl overflow-hidden border border-green-200 mb-4 shadow-sm">
       <div className="pattern-bg px-4 py-3 text-center">
         <p className="text-green-200 text-[11px] arabic mb-1">الصَّلَاةُ عِمَادُ الدِّينِ</p>
-        <p className="text-white font-bold text-[15px]">🕌 নামাজের সময়</p>
-        <p className="text-green-300 text-[12px]">ঢাকা, বাংলাদেশ</p>
+        <p className="text-white font-bold text-[15px]">🕌 Prayer Times · নামাজের সময়</p>
+        <p className="text-green-300 text-[12px]">Dhaka, Bangladesh · ঢাকা</p>
         <div className="mt-2 bg-white/10 rounded-lg px-3 py-1.5">
           <p className="text-yellow-300 text-[11px] font-bold">৭ যুল-হিজ্জাহ ১৪৪৬ AH</p>
           <p className="text-green-200 text-[11px]">৬ জুন ২০২৫, শুক্রবার</p>
@@ -24,7 +24,7 @@ function PrayerCard() {
             </div>
             <div className="flex items-center gap-2">
               <span className={`text-[13px] font-mono ${i === 1 ? 'text-green-700 font-bold' : 'text-gray-500'}`}>{p.time}</span>
-              {i === 1 && <span className="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded-full font-bold">এখন</span>}
+              {i === 1 && <span className="text-[10px] bg-green-600 text-white px-1.5 py-0.5 rounded-full font-bold">Now · এখন</span>}
             </div>
           </div>
         ))}
@@ -46,7 +46,10 @@ function TrendingTopics() {
     <div className="bg-white border border-green-100 rounded-xl overflow-hidden mb-4 shadow-sm">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-green-100">
         <FaHashtag className="text-green-600" />
-        <p className="font-bold text-[15px] text-green-800">উম্মাহয় ট্রেন্ডিং</p>
+        <div>
+          <p className="font-bold text-[14px] text-green-800">Trending in Ummah</p>
+          <p className="text-[11px] text-green-500">উম্মাহয় ট্রেন্ডিং</p>
+        </div>
       </div>
       <div className="divide-y divide-green-50">
         {topics.map((t, i) => (
@@ -61,7 +64,7 @@ function TrendingTopics() {
         ))}
       </div>
       <button className="w-full text-center py-2.5 text-[13px] text-green-600 font-semibold hover:bg-green-50 transition-colors">
-        আরো ট্রেন্ড দেখুন →
+        See more trends · আরো ট্রেন্ড দেখুন →
       </button>
     </div>
   );
@@ -79,7 +82,7 @@ export default function RightSidebar() {
 
         {/* Daily Hadith */}
         <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 mb-4 text-center shadow-sm">
-          <p className="text-[11px] text-amber-600 font-bold uppercase tracking-wider mb-1">💡 আজকের হাদিস</p>
+          <p className="text-[11px] text-amber-600 font-bold uppercase tracking-wider mb-1">💡 Hadith of the Day · আজকের হাদিস</p>
           <p className="text-amber-800 text-[13px] leading-snug font-medium">
             "মুমিনদের মধ্যে সর্বোত্তম সেই ব্যক্তি যার চরিত্র সবচেয়ে সুন্দর।"
           </p>
@@ -89,7 +92,10 @@ export default function RightSidebar() {
         <TrendingTopics />
 
         {/* Islamic Services */}
-        <h3 className="text-[15px] font-bold text-green-800 mb-3">🕌 ইসলামিক সেবা</h3>
+        <div className="mb-3">
+          <h3 className="text-[14px] font-bold text-green-800">🕌 Islamic Services</h3>
+          <p className="text-[11px] text-green-500">ইসলামিক সেবা</p>
+        </div>
         {[
           { img: 'https://picsum.photos/seed/isl1/100/100', title: 'অনলাইন Quran শিক্ষা', url: 'quranacademy.com', desc: 'নূরানী পদ্ধতিতে Quran শিখুন।' },
           { img: 'https://picsum.photos/seed/isl2/100/100', title: 'ইসলামিক বইয়ের দোকান', url: 'islamicbooks.com.bd', desc: 'তাফসীর, হাদিস ও ইসলামিক বই।' },
@@ -108,7 +114,10 @@ export default function RightSidebar() {
 
         {/* Contacts */}
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-[15px] font-bold text-green-800">মুসলিম পরিচিতি</h3>
+          <div>
+            <h3 className="text-[14px] font-bold text-green-800">Muslim Contacts</h3>
+            <p className="text-[11px] text-green-500">মুসলিম পরিচিতি</p>
+          </div>
           <div className="flex gap-1">
             <button className="w-7 h-7 rounded-full hover:bg-green-50 flex items-center justify-center transition-colors">
               <FaSearch className="text-green-600 text-xs" />

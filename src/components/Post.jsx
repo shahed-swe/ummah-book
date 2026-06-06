@@ -13,10 +13,10 @@ const REACTIONS = [
 ];
 
 const TYPE_STYLES = {
-  quran:    { bg: 'from-green-700 to-green-900',   label: '📖 Quran Ayat',       text: 'text-green-300' },
-  hadith:   { bg: 'from-emerald-700 to-teal-900',  label: '📜 Hadith',           text: 'text-emerald-300' },
-  reminder: { bg: 'from-green-800 to-green-600',   label: '🌙 Islamic Reminder', text: 'text-green-200' },
-  dua:      { bg: 'from-teal-700 to-green-800',    label: '🤲 Dua & Dhikr',      text: 'text-teal-200' },
+  quran:    { bg: 'from-green-700 to-green-900',   en: 'Quran Ayat',       bn: 'কুরআন আয়াত',   emoji: '📖', text: 'text-green-300' },
+  hadith:   { bg: 'from-emerald-700 to-teal-900',  en: 'Hadith',           bn: 'হাদিস',         emoji: '📜', text: 'text-emerald-300' },
+  reminder: { bg: 'from-green-800 to-green-600',   en: 'Islamic Reminder', bn: 'ইসলামিক স্মরণ', emoji: '🌙', text: 'text-green-200' },
+  dua:      { bg: 'from-teal-700 to-green-800',    en: 'Dua & Dhikr',      bn: 'দু\'আ ও যিকর',  emoji: '🤲', text: 'text-teal-200' },
 };
 
 export default function Post({ post }) {
@@ -64,7 +64,13 @@ export default function Post({ post }) {
     <div className="card overflow-hidden fade-in">
       {/* Type banner */}
       <div className={`bg-gradient-to-r ${typeStyle.bg} px-4 py-1.5 flex items-center justify-between`}>
-        <span className={`text-[12px] font-bold ${typeStyle.text}`}>{typeStyle.label}</span>
+        <div className="flex items-center gap-1.5">
+          <span>{typeStyle.emoji}</span>
+          <div>
+            <span className={`text-[11px] font-bold ${typeStyle.text} block leading-none`}>{typeStyle.en}</span>
+            <span className={`text-[10px] ${typeStyle.text} opacity-80 block leading-none`}>{typeStyle.bn}</span>
+          </div>
+        </div>
         <span className="text-green-200 text-[11px] arabic">بِسْمِ اللَّهِ</span>
       </div>
 
@@ -96,25 +102,40 @@ export default function Post({ post }) {
             <FaEllipsisH className="text-[#65676b]" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-10 bg-white rounded-xl shadow-xl w-[210px] z-20 border border-green-100 overflow-hidden">
+            <div className="absolute right-0 top-10 bg-white rounded-xl shadow-xl w-[220px] z-20 border border-green-100 overflow-hidden">
               <button onClick={handleSave}
-                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
                 <span>{isSaved ? '✅' : '🔖'}</span>
-                <span>{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</span>
+                <div>
+                  <p className="font-bold text-[12px]">{isSaved ? 'Saved' : 'Save Post'}</p>
+                  <p className="text-[11px] text-gray-500">{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</p>
+                </div>
               </button>
               {currentUser && post.user.id === currentUser.id && (
                 <button onClick={handleDelete}
-                  className="w-full text-left px-4 py-3 text-[14px] hover:bg-red-50 text-red-600 transition-colors font-medium flex items-center gap-2">
-                  <span>🗑️</span><span>পোস্ট মুছুন</span>
+                  className="w-full text-left px-4 py-3 text-[13px] hover:bg-red-50 text-red-600 transition-colors font-medium flex items-center gap-2">
+                  <span>🗑️</span>
+                  <div>
+                    <p className="font-bold text-[12px]">Delete Post</p>
+                    <p className="text-[11px] opacity-80">পোস্ট মুছুন</p>
+                  </div>
                 </button>
               )}
               <button onClick={() => setShowMenu(false)}
-                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
-                <span>🔕</span><span>Hide Post</span>
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                <span>🔕</span>
+                <div>
+                  <p className="font-bold text-[12px]">Hide Post</p>
+                  <p className="text-[11px] text-gray-500">পোস্ট লুকান</p>
+                </div>
               </button>
               <button onClick={() => setShowMenu(false)}
-                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
-                <span>🚫</span><span>Report</span>
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                <span>🚫</span>
+                <div>
+                  <p className="font-bold text-[12px]">Report</p>
+                  <p className="text-[11px] text-gray-500">রিপোর্ট করুন</p>
+                </div>
               </button>
             </div>
           )}
@@ -149,7 +170,7 @@ export default function Post({ post }) {
           </span>
         </div>
         <button onClick={() => setShowComments(!showComments)} className="text-[14px] text-[#65676b] hover:underline">
-          {post.comments} মন্তব্য · {post.shares} শেয়ার
+          {post.comments} Comments · মন্তব্য &nbsp;·&nbsp; {post.shares} Shares · শেয়ার
         </button>
       </div>
 
@@ -165,8 +186,16 @@ export default function Post({ post }) {
             onClick={handleLikeClick}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
             {myReaction && reactionObj
-              ? <><span className="text-xl">{reactionObj.emoji}</span><span className="font-bold text-[14px]" style={{ color: reactionObj.color }}>{reactionObj.label}</span></>
-              : <><span className="text-xl">🤲</span><span className="font-bold text-[14px] text-green-700">Dua</span></>
+              ? <><span className="text-xl">{reactionObj.emoji}</span><span className="font-bold text-[13px]" style={{ color: reactionObj.color }}>{reactionObj.label}</span></>
+              : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl">🤲</span>
+                  <div className="text-left leading-tight">
+                    <p className="font-bold text-[11px] text-green-700">Dua</p>
+                    <p className="text-[10px] text-green-500">দু'আ</p>
+                  </div>
+                </div>
+              )
             }
           </button>
           {showReactions && (
@@ -186,16 +215,22 @@ export default function Post({ post }) {
 
         {/* Comment */}
         <button onClick={() => setShowComments(!showComments)}
-          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-green-50 transition-colors">
           <FaRegComment className="text-green-600 text-lg" />
-          <span className="font-bold text-[14px] text-green-700">মন্তব্য</span>
+          <div className="text-left leading-tight">
+            <p className="font-bold text-[11px] text-green-700">Comment</p>
+            <p className="text-[10px] text-green-500">মন্তব্য</p>
+          </div>
         </button>
 
         {/* Share */}
         <button onClick={() => { sharePost(post.id); }}
-          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-green-50 transition-colors">
           <FaShare className="text-green-600 text-lg" />
-          <span className="font-bold text-[14px] text-green-700">শেয়ার</span>
+          <div className="text-left leading-tight">
+            <p className="font-bold text-[11px] text-green-700">Share</p>
+            <p className="text-[10px] text-green-500">শেয়ার</p>
+          </div>
         </button>
       </div>
 
@@ -218,7 +253,7 @@ export default function Post({ post }) {
               <img src={currentUser.avatar} alt="me" className="w-8 h-8 rounded-full object-cover border-2 border-green-400 flex-shrink-0" />
               <div className="flex-1 relative">
                 <input type="text" value={comment} onChange={e => setComment(e.target.value)}
-                  placeholder="মন্তব্য লিখুন... 🤲"
+                  placeholder="Write a comment / মন্তব্য লিখুন... 🤲"
                   className="w-full bg-green-50 border border-green-200 rounded-full px-4 py-2 text-[14px] placeholder-green-400 outline-none focus:border-green-400 pr-10" />
                 <button type="submit" disabled={!comment.trim()} className="absolute right-3 top-1/2 -translate-y-1/2 text-[18px] disabled:opacity-40">🕌</button>
               </div>
