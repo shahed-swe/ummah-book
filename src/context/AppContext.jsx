@@ -3,7 +3,7 @@ import { demoUsers, initialPosts, initialNotifications, initialContacts } from '
 import { hadithCollection } from '../data/hadithData';
 
 const AppContext = createContext();
-const STORAGE_V = 'ub_v5';
+const STORAGE_V = 'ub_v6';
 
 function freshUsers() {
   return demoUsers.map(u => ({

@@ -6,7 +6,7 @@ export const demoUsers = [
     bio: '🕌 Muslim · Software Developer · Bangladesh 🇧🇩\nআলহামদুলিল্লাহ, সবকিছুর জন্য শুকরিয়া।',
     location: 'Dhaka, Bangladesh', joinDate: 'January 2022',
     friends: 3, title: 'Muslim · Software Developer',
-    friendIds: [2, 4, 7], sentRequests: [], receivedRequests: [],
+    friendIds: [2, 4, 7], sentRequests: [], receivedRequests: [3, 6, 9],
   },
   {
     id: 2, username: 'abdullah', password: '123456',
@@ -24,7 +24,7 @@ export const demoUsers = [
     bio: '✅ Official UmmahBook Account\nআমাদের ইসলামিক সম্প্রদায়ে স্বাগতম।',
     location: 'Bangladesh', joinDate: 'January 2020',
     friends: 9999, title: 'Official Admin',
-    friendIds: [], sentRequests: [], receivedRequests: [],
+    friendIds: [], sentRequests: [1], receivedRequests: [],
   },
   {
     id: 4, username: 'fatima', password: '123456',
@@ -51,7 +51,7 @@ export const demoUsers = [
     bio: '🤲 আলহামদুলিল্লাহ · দ্বীনের পথে · Sylhet\nআল্লাহই আমার সব।',
     location: 'Sylhet, Bangladesh', joinDate: 'October 2022',
     friends: 0, title: 'মুসলিমা · সিলেট',
-    friendIds: [], sentRequests: [], receivedRequests: [],
+    friendIds: [], sentRequests: [1], receivedRequests: [],
   },
   {
     id: 7, username: 'ibrahim', password: '123456',
@@ -78,7 +78,7 @@ export const demoUsers = [
     bio: '🌍 Islamic Content Creator · Barisal\nHadith ও Sunnah শেয়ার করি।',
     location: 'Barisal, Bangladesh', joinDate: 'September 2022',
     friends: 0, title: 'Islamic Content Creator',
-    friendIds: [], sentRequests: [], receivedRequests: [],
+    friendIds: [], sentRequests: [1], receivedRequests: [],
   },
   {
     id: 10, username: 'maryam', password: '123456',
