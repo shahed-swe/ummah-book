@@ -1,26 +1,22 @@
-import { useState, useEffect } from 'react';
-import api from '../services/api';
+import { useState } from 'react';
+import { islamicEvents } from '../data/initialData';
 
 export default function EventsPage() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState(() =>
+    JSON.parse(localStorage.getItem('ub_events') || 'null') || islamicEvents.map(e => ({ ...e, status: null }))
+  );
 
-  useEffect(() => {
-    api.get('/events')
-      .then(r => setEvents(r.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+  const save = (updated) => {
+    setEvents(updated);
+    localStorage.setItem('ub_events', JSON.stringify(updated));
+  };
 
-  const respond = async (id, responseType) => {
-    const ev = events.find(e => e.id === id);
-    const prev = ev?.status;
-    const isSame = prev === responseType;
-    const newStatus = isSame ? null : responseType;
-
-    // Optimistic update
-    setEvents(prev => prev.map(e => {
+  const respond = (id, responseType) => {
+    save(events.map(e => {
       if (e.id !== id) return e;
+      const prev = e.status;
+      const isSame = prev === responseType;
+      const newStatus = isSame ? null : responseType;
       let going = e.going, interested = e.interested;
       if (prev === 'going') going = Math.max(0, going - 1);
       if (prev === 'interested') interested = Math.max(0, interested - 1);
@@ -28,23 +24,10 @@ export default function EventsPage() {
       if (!isSame && responseType === 'interested') interested += 1;
       return { ...e, status: newStatus, going, interested };
     }));
-
-    try {
-      await api.post(`/events/${id}/respond`, { responseType: isSame ? null : responseType });
-    } catch {
-      // Revert on error
-      api.get('/events').then(r => setEvents(r.data));
-    }
   };
 
   const going = events.filter(e => e.status === 'going');
   const interested = events.filter(e => e.status === 'interested');
-
-  if (loading) return (
-    <div className="card p-8 text-center text-green-600">
-      <p className="text-[32px] mb-2">⏳</p><p>ইভেন্ট লোড হচ্ছে...</p>
-    </div>
-  );
 
   return (
     <div className="fade-in space-y-3">

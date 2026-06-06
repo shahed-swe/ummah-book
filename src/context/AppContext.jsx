@@ -1,171 +1,146 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { demoUsers, initialPosts, initialNotifications, initialContacts } from '../data/initialData';
 
 const AppContext = createContext();
+const STORAGE_V = 'ub_v4';
+
+function freshUsers() {
+  return demoUsers.map(u => ({
+    ...u, friendIds: u.friendIds || [], sentRequests: u.sentRequests || [], receivedRequests: u.receivedRequests || [],
+  }));
+}
 
 export function AppProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [savedPosts, setSavedPosts] = useState([]);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ub_dark') === 'true');
-  const [authLoading, setAuthLoading] = useState(true);
+  const [allUsers, setAllUsers] = useState(() => {
+    try {
+      // Clear stale data from previous backend/API versions
+      if (!localStorage.getItem(STORAGE_V)) {
+        ['ub_users','ub_user','ub_userid','ub_token','ub_posts','ub_saved','ub_groups','ub_events'].forEach(k => localStorage.removeItem(k));
+        localStorage.setItem(STORAGE_V, '1');
+        return freshUsers();
+      }
+      const stored = JSON.parse(localStorage.getItem('ub_users'));
+      // Only use stored users if they have password field (not from API version)
+      if (stored?.length && stored.some(u => u.password)) {
+        return stored.map(u => ({
+          ...u, friendIds: u.friendIds || [], sentRequests: u.sentRequests || [], receivedRequests: u.receivedRequests || [],
+        }));
+      }
+    } catch {}
+    return freshUsers();
+  });
 
-  // Dark mode
+  const [currentUserId, setCurrentUserId] = useState(() => {
+    try {
+      if (!localStorage.getItem(STORAGE_V)) return null;
+      const id = JSON.parse(localStorage.getItem('ub_userid'));
+      if (id) return id;
+      const user = JSON.parse(localStorage.getItem('ub_user'));
+      return user?.id || null;
+    } catch { return null; }
+  });
+
+  const currentUser = currentUserId ? (allUsers.find(u => u.id === currentUserId) || null) : null;
+
+  const [posts, setPosts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ub_posts')) || initialPosts; } catch { return initialPosts; }
+  });
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ub_dark') === 'true');
+  const [savedPosts, setSavedPosts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ub_saved')) || []; } catch { return []; }
+  });
+  const [contacts] = useState(initialContacts);
+
+  useEffect(() => { localStorage.setItem('ub_users', JSON.stringify(allUsers)); }, [allUsers]);
+  useEffect(() => {
+    if (currentUserId != null) localStorage.setItem('ub_userid', JSON.stringify(currentUserId));
+    else localStorage.removeItem('ub_userid');
+  }, [currentUserId]);
+  useEffect(() => {
+    if (currentUser) localStorage.setItem('ub_user', JSON.stringify(currentUser));
+    else localStorage.removeItem('ub_user');
+  }, [currentUserId, allUsers]);
+  useEffect(() => { localStorage.setItem('ub_posts', JSON.stringify(posts)); }, [posts]);
+  useEffect(() => { localStorage.setItem('ub_dark', darkMode); }, [darkMode]);
+  useEffect(() => { localStorage.setItem('ub_saved', JSON.stringify(savedPosts)); }, [savedPosts]);
   useEffect(() => {
     if (darkMode) document.body.classList.add('dark');
     else document.body.classList.remove('dark');
-    localStorage.setItem('ub_dark', darkMode);
   }, [darkMode]);
 
-  // Fetch data after login
-  const fetchAppData = useCallback(async () => {
-    try {
-      const [postsRes, usersRes, notiRes] = await Promise.all([
-        api.get('/posts'),
-        api.get('/users'),
-        api.get('/notifications'),
-      ]);
-      setPosts(postsRes.data);
-      setAllUsers(usersRes.data);
-      setNotifications(notiRes.data);
-    } catch (err) {
-      console.error('Failed to fetch app data:', err.message);
-    }
-  }, []);
-
-  // Refresh current user (to get latest friendIds etc.)
-  const refreshCurrentUser = useCallback(async () => {
-    try {
-      const res = await api.get('/auth/me');
-      setCurrentUser(res.data.user);
-      return res.data.user;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  // Initialize: check token on mount
-  useEffect(() => {
-    const init = async () => {
-      const token = localStorage.getItem('ub_token');
-      if (!token) { setAuthLoading(false); return; }
-      try {
-        const res = await api.get('/auth/me');
-        setCurrentUser(res.data.user);
-        await fetchAppData();
-      } catch {
-        localStorage.removeItem('ub_token');
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    init();
-  }, [fetchAppData]);
-
   // Auth
-  const login = async (username, password) => {
-    try {
-      const res = await api.post('/auth/login', { username, password });
-      localStorage.setItem('ub_token', res.data.token);
-      setCurrentUser(res.data.user);
-      await fetchAppData();
-      return { ok: true };
-    } catch (err) {
-      return { ok: false, msg: err.response?.data?.msg || 'লগইন ব্যর্থ হয়েছে!' };
-    }
+  const login = (username, password) => {
+    const user = allUsers.find(u => u.username === username && u.password === password);
+    if (user) { setCurrentUserId(user.id); return { ok: true }; }
+    return { ok: false, msg: 'ভুল username বা password!' };
   };
 
-  const register = async ({ name, username, password }) => {
-    try {
-      const res = await api.post('/auth/register', { name, username, password });
-      localStorage.setItem('ub_token', res.data.token);
-      setCurrentUser(res.data.user);
-      await fetchAppData();
-      return { ok: true };
-    } catch (err) {
-      return { ok: false, msg: err.response?.data?.msg || 'নিবন্ধন ব্যর্থ হয়েছে!' };
-    }
+  const register = ({ name, username, password }) => {
+    const exists = allUsers.find(u => u.username === username);
+    if (exists) return { ok: false, msg: 'এই username ইতিমধ্যে আছে!' };
+    const newUser = {
+      id: Date.now(), username, password, name,
+      avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 60) + 1}`,
+      coverPhoto: `https://picsum.photos/seed/${username}/900/300`,
+      bio: 'Muslim · Bangladesh 🇧🇩', location: 'Bangladesh',
+      joinDate: 'June 2025', friends: 0, title: 'Muslim · Bangladesh',
+      friendIds: [], sentRequests: [], receivedRequests: [],
+    };
+    setAllUsers(prev => [...prev, newUser]);
+    setCurrentUserId(newUser.id);
+    return { ok: true };
   };
 
   const logout = () => {
-    localStorage.removeItem('ub_token');
-    setCurrentUser(null);
-    setPosts([]);
-    setAllUsers([]);
-    setNotifications([]);
+    setCurrentUserId(null);
+    localStorage.removeItem('ub_user');
+    localStorage.removeItem('ub_userid');
   };
 
-  const updateProfile = async (updates) => {
-    try {
-      const res = await api.put('/users/profile', updates);
-      setCurrentUser(prev => ({ ...prev, ...res.data }));
-      setAllUsers(prev => prev.map(u => u.id === res.data.id ? { ...u, ...res.data } : u));
-    } catch (err) {
-      console.error('Profile update failed:', err.message);
-    }
+  const updateProfile = (updates) => {
+    setAllUsers(prev => prev.map(u => u.id === currentUserId ? { ...u, ...updates } : u));
   };
 
   // Friend system
-  const sendFriendRequest = async (toUserId) => {
-    // Optimistic update
-    setCurrentUser(prev => ({
-      ...prev,
-      sentRequests: [...(prev.sentRequests || []), toUserId],
+  const sendFriendRequest = (toUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, sentRequests: [...(u.sentRequests || []), toUserId] };
+      if (u.id === toUserId) return { ...u, receivedRequests: [...(u.receivedRequests || []), currentUserId] };
+      return u;
     }));
-    try {
-      await api.post(`/friends/request/${toUserId}`);
-    } catch {
-      // Revert on failure
-      setCurrentUser(prev => ({
-        ...prev,
-        sentRequests: (prev.sentRequests || []).filter(id => id !== toUserId),
-      }));
-    }
   };
 
-  const cancelFriendRequest = async (toUserId) => {
-    setCurrentUser(prev => ({
-      ...prev,
-      sentRequests: (prev.sentRequests || []).filter(id => id !== toUserId),
+  const cancelFriendRequest = (toUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, sentRequests: (u.sentRequests || []).filter(id => id !== toUserId) };
+      if (u.id === toUserId) return { ...u, receivedRequests: (u.receivedRequests || []).filter(id => id !== currentUserId) };
+      return u;
     }));
-    try {
-      await api.delete(`/friends/request/${toUserId}`);
-    } catch {
-      setCurrentUser(prev => ({
-        ...prev,
-        sentRequests: [...(prev.sentRequests || []), toUserId],
-      }));
-    }
   };
 
-  const acceptFriend = async (fromUserId) => {
-    try {
-      await api.post(`/friends/accept/${fromUserId}`);
-      await refreshCurrentUser();
-      setAllUsers(prev => prev.map(u => {
-        if (u.id === fromUserId) {
-          return { ...u, friendIds: [...(u.friendIds || []), currentUser.id] };
-        }
-        return u;
-      }));
-    } catch (err) {
-      console.error('Accept friend failed:', err.message);
-    }
+  const acceptFriend = (fromUserId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return {
+        ...u, friendIds: [...(u.friendIds || []), fromUserId],
+        receivedRequests: (u.receivedRequests || []).filter(id => id !== fromUserId),
+        friends: (u.friends || 0) + 1,
+      };
+      if (u.id === fromUserId) return {
+        ...u, friendIds: [...(u.friendIds || []), currentUserId],
+        sentRequests: (u.sentRequests || []).filter(id => id !== currentUserId),
+        friends: (u.friends || 0) + 1,
+      };
+      return u;
+    }));
   };
 
-  const removeFriend = async (userId) => {
-    setCurrentUser(prev => ({
-      ...prev,
-      friendIds: (prev.friendIds || []).filter(id => id !== userId),
-      friends: Math.max(0, (prev.friends || 0) - 1),
+  const removeFriend = (userId) => {
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === currentUserId) return { ...u, friendIds: (u.friendIds || []).filter(id => id !== userId), friends: Math.max(0, (u.friends || 0) - 1) };
+      if (u.id === userId) return { ...u, friendIds: (u.friendIds || []).filter(id => id !== currentUserId), friends: Math.max(0, (u.friends || 0) - 1) };
+      return u;
     }));
-    try {
-      await api.delete(`/friends/${userId}`);
-    } catch {
-      await refreshCurrentUser();
-    }
   };
 
   const isFriend = (userId) => (currentUser?.friendIds || []).includes(userId);
@@ -174,28 +149,19 @@ export function AppProvider({ children }) {
   const getUserById = (id) => allUsers.find(u => u.id === parseInt(id));
 
   // Posts
-  const addPost = async ({ content, image, type, arabic, privacy }) => {
-    try {
-      const res = await api.post('/posts', { content, image, type, arabic, privacy });
-      setPosts(prev => [res.data, ...prev]);
-    } catch (err) {
-      console.error('Add post failed:', err.message);
-    }
+  const addPost = ({ content, image, type, arabic, privacy }) => {
+    setPosts(prev => [{
+      id: Date.now(),
+      user: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar },
+      time: 'এইমাত্র', privacy: privacy || 'public', type: type || 'regular', arabic: arabic || null,
+      content, image: image || null, likes: 0, comments: 0, shares: 0,
+      reactions: [], userReactions: {}, commentsList: [], savedBy: [],
+    }, ...prev]);
   };
 
-  const deletePost = async (postId) => {
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    try {
-      await api.delete(`/posts/${postId}`);
-    } catch {
-      // Re-fetch on failure
-      const res = await api.get('/posts');
-      setPosts(res.data);
-    }
-  };
+  const deletePost = (postId) => setPosts(prev => prev.filter(p => p.id !== postId));
 
-  const toggleLike = async (postId, reaction) => {
-    // Optimistic update
+  const toggleLike = (postId, reaction) => {
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
       const userReactions = { ...(p.userReactions || {}) };
@@ -204,81 +170,39 @@ export function AppProvider({ children }) {
         delete userReactions[currentUser.id];
         return { ...p, likes: Math.max(0, p.likes - 1), userReactions };
       }
-      const likeDelta = prevReaction ? 0 : 1;
       userReactions[currentUser.id] = reaction.label;
-      return { ...p, likes: p.likes + likeDelta, userReactions };
+      return { ...p, likes: p.likes + (prevReaction ? 0 : 1), userReactions };
     }));
-    try {
-      await api.post(`/posts/${postId}/react`, { reaction: reaction.label });
-    } catch (err) {
-      console.error('React failed:', err.message);
-    }
   };
 
-  const addComment = async (postId, text) => {
-    try {
-      const res = await api.post(`/posts/${postId}/comment`, { text });
-      setPosts(prev => prev.map(p => {
-        if (p.id !== postId) return p;
-        return {
-          ...p,
-          comments: p.comments + 1,
-          commentsList: [...(p.commentsList || []), res.data],
-        };
-      }));
-    } catch (err) {
-      console.error('Comment failed:', err.message);
-    }
+  const addComment = (postId, text) => {
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      return {
+        ...p, comments: p.comments + 1,
+        commentsList: [...(p.commentsList || []), {
+          id: Date.now(), user: { name: currentUser.name, avatar: currentUser.avatar }, text, time: 'এইমাত্র',
+        }],
+      };
+    }));
   };
 
-  const sharePost = async (postId) => {
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
-    try {
-      await api.post(`/posts/${postId}/share`);
-    } catch (err) {
-      console.error('Share failed:', err.message);
-    }
-  };
+  const sharePost = (postId) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, shares: p.shares + 1 } : p));
 
-  const toggleSave = async (postId) => {
-    const isSaved = savedPosts.includes(postId);
-    setSavedPosts(prev => isSaved ? prev.filter(id => id !== postId) : [...prev, postId]);
-    try {
-      await api.post(`/posts/${postId}/save`);
-    } catch (err) {
-      setSavedPosts(prev => isSaved ? [...prev, postId] : prev.filter(id => id !== postId));
-    }
-  };
+  const toggleSave = (postId) => setSavedPosts(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]);
 
-  // Notifications
-  const markAllRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    try {
-      await api.put('/notifications/read-all');
-    } catch (err) {
-      console.error('Mark read failed:', err.message);
-    }
-  };
+  const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Contacts (static for now)
-  const contacts = [
-    { id: 1, name: 'Abdullah Al-Faruk', avatar: 'https://i.pravatar.cc/150?img=3', online: true },
-    { id: 2, name: 'Fatima Begum', avatar: 'https://i.pravatar.cc/150?img=5', online: true },
-    { id: 3, name: 'Umar Farooq', avatar: 'https://i.pravatar.cc/150?img=8', online: false },
-    { id: 4, name: 'Ayesha Siddiqua', avatar: 'https://i.pravatar.cc/150?img=9', online: true },
-  ];
-
   return (
     <AppContext.Provider value={{
-      currentUser, authLoading, login, logout, register, updateProfile,
+      currentUser, authLoading: false, login, logout, register, updateProfile,
       posts, addPost, deletePost, toggleLike, addComment, sharePost,
       savedPosts, toggleSave,
       notifications, markAllRead, unreadCount,
       darkMode, setDarkMode,
-      contacts,
-      allUsers,
+      contacts, allUsers,
       sendFriendRequest, cancelFriendRequest, acceptFriend, removeFriend,
       isFriend, hasSentRequest, hasReceivedRequest, getUserById,
     }}>

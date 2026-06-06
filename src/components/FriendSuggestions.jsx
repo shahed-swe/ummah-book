@@ -18,47 +18,46 @@ export default function FriendSuggestions() {
   if (suggestions.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-green-100 p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-[17px] font-bold text-[#1a1a1a]">People You May Know</h3>
-          <p className="text-[12px] text-green-600">Fellow Muslims in your community</p>
+          <h3 className="text-[16px] font-bold text-green-800">আপনি হয়তো চেনেন</h3>
+          <p className="text-[12px] text-green-600">আপনার মুসলিম কমিউনিটির সদস্যরা</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {suggestions.slice(0, 6).map((person) => (
-          <div key={person.id} className="border border-green-100 rounded-xl overflow-hidden relative group">
+          <div key={person.id} className="border border-green-100 rounded-xl overflow-hidden relative group hover:shadow-md transition-shadow">
             <button
               onClick={() => setDismissed(prev => [...prev, person.id])}
-              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/80 hover:bg-white flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow"
+              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 hover:bg-white flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-gray-100"
             >
-              <FaTimes className="text-[#65676b] text-[10px]" />
+              <FaTimes className="text-gray-500 text-[10px]" />
             </button>
 
             <Link to={`/profile/${person.id}`}>
-              <img src={person.avatar} alt={person.name} className="w-full h-[100px] object-cover hover:opacity-90 transition-opacity" />
+              <img src={person.avatar} alt={person.name}
+                className="w-full h-[100px] object-cover hover:opacity-90 transition-opacity" />
             </Link>
 
             <div className="p-2 text-center">
               <Link to={`/profile/${person.id}`}>
-                <p className="font-bold text-[13px] text-[#1a1a1a] leading-tight truncate hover:underline">{person.name}</p>
+                <p className="font-bold text-[12px] text-green-900 leading-tight truncate hover:underline">{person.name}</p>
               </Link>
-              <p className="text-[11px] text-[#65676b] mt-0.5 truncate">{person.title || 'Muslim'}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5 truncate">{person.title || 'Muslim'}</p>
 
               {hasSentRequest(person.id) ? (
                 <button
                   onClick={() => cancelFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[12px] transition-colors hover:bg-yellow-200"
-                >
+                  className="w-full mt-2 py-1.5 rounded-lg bg-yellow-100 text-yellow-700 font-bold text-[11px] transition-colors hover:bg-yellow-200">
                   ⏳ অনুরোধ পাঠানো
                 </button>
               ) : (
                 <button
                   onClick={() => sendFriendRequest(person.id)}
-                  className="w-full mt-2 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold text-[12px] transition-colors"
-                >
-                  + Add Friend
+                  className="w-full mt-2 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[11px] transition-colors">
+                  + বন্ধু যোগ করুন
                 </button>
               )}
             </div>

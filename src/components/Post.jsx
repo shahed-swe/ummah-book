@@ -13,14 +13,14 @@ const REACTIONS = [
 ];
 
 const TYPE_STYLES = {
-  quran: { bg: 'from-green-700 to-green-900', label: '📖 Quran Ayat', text: 'text-green-300' },
-  hadith: { bg: 'from-emerald-700 to-teal-900', label: '📜 Hadith', text: 'text-emerald-300' },
-  reminder: { bg: 'from-green-800 to-green-600', label: '🌙 Islamic Reminder', text: 'text-green-200' },
-  dua: { bg: 'from-teal-700 to-green-800', label: '🤲 Dua & Dhikr', text: 'text-teal-200' },
+  quran:    { bg: 'from-green-700 to-green-900',   label: '📖 Quran Ayat',       text: 'text-green-300' },
+  hadith:   { bg: 'from-emerald-700 to-teal-900',  label: '📜 Hadith',           text: 'text-emerald-300' },
+  reminder: { bg: 'from-green-800 to-green-600',   label: '🌙 Islamic Reminder', text: 'text-green-200' },
+  dua:      { bg: 'from-teal-700 to-green-800',    label: '🤲 Dua & Dhikr',      text: 'text-teal-200' },
 };
 
 export default function Post({ post }) {
-  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost } = useApp();
+  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts } = useApp();
   const [showReactions, setShowReactions] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
@@ -29,7 +29,7 @@ export default function Post({ post }) {
 
   const myReaction = currentUser ? (post.userReactions || {})[currentUser.id] : null;
   const reactionObj = REACTIONS.find(r => r.label === myReaction);
-  const isSaved = currentUser && (post.savedBy || []).includes ? false : false; // tracked via context savedPosts
+  const isSaved = savedPosts.includes(post.id);
 
   const handleReact = (r) => {
     if (currentUser) toggleLike(post.id, r);
@@ -45,10 +45,6 @@ export default function Post({ post }) {
     if (!comment.trim() || !currentUser) return;
     addComment(post.id, comment);
     setComment('');
-  };
-
-  const handleShare = () => {
-    sharePost(post.id);
   };
 
   const handleSave = () => {
@@ -80,33 +76,45 @@ export default function Post({ post }) {
             <span className="absolute -bottom-1 -right-1 text-xs">☪️</span>
           </div>
           <div>
-            <Link to={`/profile/${post.user.id}`} className="font-bold text-[15px] hover:underline">{post.user.name}</Link>
+            <Link to={`/profile/${post.user.id}`} className="font-bold text-[15px] hover:underline text-green-900">
+              {post.user.name}
+            </Link>
             <div className="flex items-center gap-1 text-[#65676b] text-[12px]">
               <span className="text-green-600">{post.time}</span>
               <span>·</span>
-              {post.privacy === 'public' ? <FaGlobe className="text-[11px] text-green-600" /> : <FaUserFriends className="text-[11px] text-green-600" />}
+              {post.privacy === 'public'
+                ? <FaGlobe className="text-[11px] text-green-600" />
+                : <FaUserFriends className="text-[11px] text-green-600" />}
             </div>
           </div>
         </div>
+
+        {/* Menu */}
         <div className="relative">
-          <button onClick={() => setShowMenu(!showMenu)} className="w-9 h-9 rounded-full hover:bg-green-50 flex items-center justify-center transition-colors">
+          <button onClick={() => setShowMenu(!showMenu)}
+            className="w-9 h-9 rounded-full hover:bg-green-50 flex items-center justify-center transition-colors">
             <FaEllipsisH className="text-[#65676b]" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-10 bg-white rounded-xl shadow-xl w-[200px] z-20 border border-green-100 overflow-hidden">
-              <button onClick={handleSave} className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium">
-                🔖 পোস্ট সংরক্ষণ করুন
+            <div className="absolute right-0 top-10 bg-white rounded-xl shadow-xl w-[210px] z-20 border border-green-100 overflow-hidden">
+              <button onClick={handleSave}
+                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                <span>{isSaved ? '✅' : '🔖'}</span>
+                <span>{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</span>
               </button>
               {currentUser && post.user.id === currentUser.id && (
-                <button onClick={handleDelete} className="w-full text-left px-4 py-3 text-[14px] hover:bg-red-50 text-red-600 transition-colors font-medium">
-                  🗑️ পোস্ট মুছুন
+                <button onClick={handleDelete}
+                  className="w-full text-left px-4 py-3 text-[14px] hover:bg-red-50 text-red-600 transition-colors font-medium flex items-center gap-2">
+                  <span>🗑️</span><span>পোস্ট মুছুন</span>
                 </button>
               )}
-              <button onClick={() => setShowMenu(false)} className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium">
-                🔕 Hide Post
+              <button onClick={() => setShowMenu(false)}
+                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                <span>🔕</span><span>Hide Post</span>
               </button>
-              <button onClick={() => setShowMenu(false)} className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium">
-                🚫 Report
+              <button onClick={() => setShowMenu(false)}
+                className="w-full text-left px-4 py-3 text-[14px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                <span>🚫</span><span>Report</span>
               </button>
             </div>
           )}
@@ -122,7 +130,7 @@ export default function Post({ post }) {
 
       {/* Content */}
       <div className="px-4 pb-3">
-        <p className="text-[15px] leading-relaxed whitespace-pre-line">{post.content}</p>
+        <p className="text-[15px] leading-relaxed whitespace-pre-line text-gray-800">{post.content}</p>
       </div>
 
       {/* Image */}
@@ -132,12 +140,16 @@ export default function Post({ post }) {
 
       {/* Counts */}
       <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-1 cursor-pointer hover:underline">
-          {(post.reactions || []).slice(0, 3).map((r, i) => <span key={i} className="text-base">{r}</span>)}
-          <span className="text-[14px] text-[#65676b] ml-1">{(post.likes || 0).toLocaleString()}</span>
+        <div className="flex items-center gap-1">
+          {(post.reactions?.length > 0) && (
+            <span className="text-base">{post.reactions[0]}</span>
+          )}
+          <span className="text-[14px] text-[#65676b] ml-1">
+            {(post.likes || 0).toLocaleString()}
+          </span>
         </div>
         <button onClick={() => setShowComments(!showComments)} className="text-[14px] text-[#65676b] hover:underline">
-          {post.comments} comments · {post.shares} shares
+          {post.comments} মন্তব্য · {post.shares} শেয়ার
         </button>
       </div>
 
@@ -145,20 +157,21 @@ export default function Post({ post }) {
 
       {/* Action buttons */}
       <div className="flex items-center px-2 py-1">
+        {/* Like/React */}
         <div className="relative flex-1">
           <button
             onMouseEnter={() => { reactionTimer = setTimeout(() => setShowReactions(true), 500); }}
             onMouseLeave={() => { clearTimeout(reactionTimer); setTimeout(() => setShowReactions(false), 300); }}
             onClick={handleLikeClick}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
-            {myReaction && reactionObj ? (
-              <><span className="text-xl">{reactionObj.emoji}</span><span className="font-bold text-[14px]" style={{ color: reactionObj.color }}>{reactionObj.label}</span></>
-            ) : (
-              <><span className="text-xl">🤲</span><span className="font-bold text-[14px] text-green-700">Dua</span></>
-            )}
+            {myReaction && reactionObj
+              ? <><span className="text-xl">{reactionObj.emoji}</span><span className="font-bold text-[14px]" style={{ color: reactionObj.color }}>{reactionObj.label}</span></>
+              : <><span className="text-xl">🤲</span><span className="font-bold text-[14px] text-green-700">Dua</span></>
+            }
           </button>
           {showReactions && (
-            <div className="absolute bottom-9 left-0 bg-white rounded-full shadow-xl px-2 py-2 flex items-center gap-1 z-10 border border-green-200"
+            <div
+              className="absolute bottom-9 left-0 bg-white rounded-full shadow-xl px-2 py-2 flex items-center gap-1 z-10 border border-green-200"
               onMouseEnter={() => setShowReactions(true)}
               onMouseLeave={() => setShowReactions(false)}>
               {REACTIONS.map(r => (
@@ -171,20 +184,22 @@ export default function Post({ post }) {
           )}
         </div>
 
+        {/* Comment */}
         <button onClick={() => setShowComments(!showComments)}
           className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
           <FaRegComment className="text-green-600 text-lg" />
-          <span className="font-bold text-[14px] text-green-700">Comment</span>
+          <span className="font-bold text-[14px] text-green-700">মন্তব্য</span>
         </button>
 
-        <button onClick={handleShare}
+        {/* Share */}
+        <button onClick={() => { sharePost(post.id); }}
           className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg hover:bg-green-50 transition-colors">
           <FaShare className="text-green-600 text-lg" />
-          <span className="font-bold text-[14px] text-green-700">Share</span>
+          <span className="font-bold text-[14px] text-green-700">শেয়ার</span>
         </button>
       </div>
 
-      {/* Comments section */}
+      {/* Comments */}
       {showComments && (
         <div className="px-4 pb-3">
           <hr className="border-green-100 mb-3" />
@@ -193,7 +208,7 @@ export default function Post({ post }) {
               <img src={c.user.avatar} alt={c.user.name} className="w-8 h-8 rounded-full object-cover border-2 border-green-300 flex-shrink-0" />
               <div className="bg-green-50 rounded-2xl px-3 py-2 border border-green-100 flex-1">
                 <p className="font-bold text-[13px] text-green-800">{c.user.name}</p>
-                <p className="text-[14px]">{c.text}</p>
+                <p className="text-[14px] text-gray-700">{c.text}</p>
                 <p className="text-[11px] text-gray-400 mt-0.5">{c.time}</p>
               </div>
             </div>
@@ -205,7 +220,7 @@ export default function Post({ post }) {
                 <input type="text" value={comment} onChange={e => setComment(e.target.value)}
                   placeholder="মন্তব্য লিখুন... 🤲"
                   className="w-full bg-green-50 border border-green-200 rounded-full px-4 py-2 text-[14px] placeholder-green-400 outline-none focus:border-green-400 pr-10" />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-[18px]">🕌</button>
+                <button type="submit" disabled={!comment.trim()} className="absolute right-3 top-1/2 -translate-y-1/2 text-[18px] disabled:opacity-40">🕌</button>
               </div>
             </form>
           )}

@@ -3,10 +3,10 @@ import { FaBookOpen, FaImage, FaTimes, FaPray } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 
 const POST_TYPES = [
-  { key: 'quran', label: 'Quran Ayat', emoji: '📖' },
-  { key: 'hadith', label: 'Hadith', emoji: '📜' },
-  { key: 'dua', label: 'Dua & Dhikr', emoji: '🤲' },
-  { key: 'reminder', label: 'Reminder', emoji: '🌙' },
+  { key: 'quran',    label: 'কুরআন আয়াত', emoji: '📖' },
+  { key: 'hadith',   label: 'হাদিস',      emoji: '📜' },
+  { key: 'dua',      label: 'দু\'আ',      emoji: '🤲' },
+  { key: 'reminder', label: 'রিমাইন্ডার', emoji: '🌙' },
 ];
 
 export default function CreatePost() {
@@ -31,7 +31,7 @@ export default function CreatePost() {
   return (
     <>
       <div className="card p-3">
-        <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center justify-between mb-2 px-1">
           <p className="text-green-600 text-[13px] font-medium arabic text-right w-full">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</p>
         </div>
         <div className="flex items-center gap-2 mb-3">
@@ -47,9 +47,9 @@ export default function CreatePost() {
         <hr className="border-green-100 mb-2" />
         <div className="flex items-center justify-around">
           {[
-            { icon: FaBookOpen, label: 'Quran Ayat', color: 'text-green-600' },
-            { icon: FaImage, label: 'Photo', color: 'text-amber-500' },
-            { icon: FaPray, label: 'Dua', color: 'text-green-600' },
+            { icon: FaBookOpen, label: 'কুরআন আয়াত', color: 'text-green-600' },
+            { icon: FaImage, label: 'ছবি', color: 'text-amber-500' },
+            { icon: FaPray, label: 'দু\'আ', color: 'text-green-600' },
           ].map(({ icon: Icon, label, color }) => (
             <button key={label} onClick={() => setModal(true)}
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-50 transition-colors flex-1 justify-center">
@@ -63,7 +63,6 @@ export default function CreatePost() {
       {modal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3">
           <div className="card w-full max-w-[500px] rounded-2xl shadow-2xl overflow-hidden fade-in">
-            {/* Modal header */}
             <div className="relative flex items-center justify-center p-4 border-b border-green-100" style={{ background: 'linear-gradient(135deg, #1a5c2a, #2d7a3a)' }}>
               <h2 className="text-[17px] font-bold text-white">ইসলামিক কন্টেন্ট শেয়ার করুন</h2>
               <button onClick={() => setModal(false)}
@@ -73,21 +72,17 @@ export default function CreatePost() {
             </div>
 
             <div className="p-4">
-              {/* User info */}
               <div className="flex items-center gap-2 mb-3">
                 <img src={currentUser.avatar} alt="me" className="w-10 h-10 rounded-full object-cover border-2 border-green-400" />
                 <div>
-                  <p className="font-bold text-[15px]">{currentUser.name}</p>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setPrivacy(p => p === 'public' ? 'friends' : 'public')}
-                      className="flex items-center gap-1 bg-green-100 border border-green-300 rounded-md px-2 py-0.5 text-[12px] font-semibold text-green-700">
-                      {privacy === 'public' ? '🌍 Public' : '👥 Friends'}
-                    </button>
-                  </div>
+                  <p className="font-bold text-[15px] text-green-900">{currentUser.name}</p>
+                  <button onClick={() => setPrivacy(p => p === 'public' ? 'friends' : 'public')}
+                    className="flex items-center gap-1 bg-green-100 border border-green-300 rounded-md px-2 py-0.5 text-[12px] font-semibold text-green-700 mt-0.5">
+                    {privacy === 'public' ? '🌍 পাবলিক' : '👥 বন্ধুরা'}
+                  </button>
                 </div>
               </div>
 
-              {/* Post type */}
               <div className="flex gap-2 mb-3 flex-wrap">
                 {POST_TYPES.map(t => (
                   <button key={t.key} onClick={() => setType(t.key)}
@@ -99,17 +94,15 @@ export default function CreatePost() {
                 ))}
               </div>
 
-              {/* Arabic input */}
               <div className="mb-2">
                 <input value={arabic} onChange={e => setArabic(e.target.value)}
-                  placeholder="عربي نص (Arabic text — optional)"
+                  placeholder="عربي نص — Arabic text (ঐচ্ছিক)"
                   className="input-base arabic text-right text-[16px]" />
               </div>
 
-              {/* Content */}
               <textarea autoFocus value={text} onChange={e => setText(e.target.value)}
-                placeholder="আল্লাহর কথা শেয়ার করুন, Quran আয়াত বা Hadith লিখুন... 🤲"
-                className="w-full outline-none resize-none text-[15px] placeholder-green-400 min-h-[100px] leading-relaxed" rows={4} />
+                placeholder="আল্লাহর কথা শেয়ার করুন, কুরআন আয়াত বা হাদিস লিখুন... 🤲"
+                className="w-full outline-none resize-none text-[15px] placeholder-green-400 min-h-[100px] leading-relaxed text-gray-800" rows={4} />
             </div>
 
             <div className="px-4 pb-4">

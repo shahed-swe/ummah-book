@@ -21,7 +21,7 @@ export default function Stories() {
             <div className="absolute top-[-18px] w-[36px] h-[36px] rounded-full bg-green-600 flex items-center justify-center border-4 border-white">
               <FaPlus className="text-white text-xs" />
             </div>
-            <span className="text-[11px] font-bold text-green-800 text-center">Share Story</span>
+            <span className="text-[11px] font-bold text-green-800 text-center">স্টোরি তৈরি</span>
           </div>
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
         </div>
@@ -32,17 +32,14 @@ export default function Stories() {
             <img src={story.bg} alt={story.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 story-gradient" />
 
-            {/* Avatar */}
             <div className="absolute top-3 left-3 w-[38px] h-[38px] rounded-full border-4 border-green-500 overflow-hidden">
               <img src={story.avatar} alt={story.name} className="w-full h-full object-cover" />
             </div>
 
-            {/* Label badge */}
             <div className="absolute top-3 right-1 bg-green-600/80 rounded-full px-1.5 py-0.5">
               <span className="text-white text-[9px] font-bold">☪️</span>
             </div>
 
-            {/* Name + label */}
             <div className="absolute bottom-2 left-2 right-2">
               <p className="text-[10px] text-green-300 font-medium">{story.label}</p>
               <p className="text-white text-[11px] font-bold leading-tight drop-shadow">{story.name}</p>
