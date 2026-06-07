@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { demoUsers, initialPosts, initialNotifications } from '../data/initialData';
 import { hadithCollection } from '../data/hadithData';
 
@@ -36,14 +36,25 @@ function stripImages(users) {
 }
 
 function mergeImages(users) {
-  return users.map(u => ({
-    ...u,
-    avatar:     loadImg(`ub_img_a_${u.id}`) || u.avatar,
-    coverPhoto: loadImg(`ub_img_c_${u.id}`) || u.coverPhoto,
-  }));
+  return users.map(u => {
+    const savedAvatar = loadImg(`ub_img_a_${u.id}`);
+    return {
+      ...u,
+      avatar:     savedAvatar || u.avatar || getDefaultAvatar(u.name),
+      coverPhoto: loadImg(`ub_img_c_${u.id}`) || u.coverPhoto,
+    };
+  });
 }
 
 export function AppProvider({ children }) {
+
+  // ── One-time migration: clear old auto/demo notifications ────────────────
+  // Run once per device to remove initialNotifications that were auto-loaded.
+  if (!localStorage.getItem('ub_notif_cleared_v1')) {
+    // Clear all demo user notification buckets so no auto-notifications show
+    [1,2,3,4,5,6,7,8,9,10,11].forEach(id => localStorage.removeItem(`ub_notif_${id}`));
+    localStorage.setItem('ub_notif_cleared_v1', '1');
+  }
 
   // ── Users ────────────────────────────────────────────────────────────────
   const [allUsers, setAllUsers] = useState(() => {
@@ -82,6 +93,8 @@ export function AppProvider({ children }) {
 
   // ── Notifications (per-user) ─────────────────────────────────────────────
   const [notifications, setNotifications] = useState([]);
+  // Ref keeps the current userId accessible in the save effect without making it a dependency
+  const notifUserRef = useRef(null);
 
   // ── Prefs ────────────────────────────────────────────────────────────────
   const [darkMode,   setDarkMode]   = useState(() => localStorage.getItem('ub_dark') === 'true');
@@ -142,28 +155,29 @@ export function AppProvider({ children }) {
   }, []);
 
   // ── Load notifications per user ───────────────────────────────────────────
+  // Runs ONLY when the logged-in user changes. Loads that user's stored notifications.
   useEffect(() => {
+    notifUserRef.current = currentUserId; // update ref FIRST so save effect uses correct id
     if (!currentUserId) { setNotifications([]); return; }
     try {
       const key = `ub_notif_${currentUserId}`;
       const stored = JSON.parse(localStorage.getItem(key));
-      if (Array.isArray(stored) && stored.length > 0) {
-        setNotifications(stored);
-      } else {
-        // Pre-load demo notifications for all users on first login
-        setNotifications(initialNotifications);
-      }
+      // Load stored notifications; start with empty list if none exist (no auto demo notifs)
+      setNotifications(Array.isArray(stored) && stored.length > 0 ? stored : []);
     } catch {
-      setNotifications(initialNotifications);
+      setNotifications([]);
     }
   }, [currentUserId]);
 
   // ── Save notifications per user ──────────────────────────────────────────
+  // Depends ONLY on notifications — NOT on currentUserId — so it never runs
+  // at login time (which would overwrite the new user's notifs with old ones).
+  // It uses notifUserRef to always write under the correct user's key.
   useEffect(() => {
-    if (currentUserId != null) {
-      localStorage.setItem(`ub_notif_${currentUserId}`, JSON.stringify(notifications.slice(0, 50)));
+    if (notifUserRef.current != null) {
+      localStorage.setItem(`ub_notif_${notifUserRef.current}`, JSON.stringify(notifications.slice(0, 50)));
     }
-  }, [notifications, currentUserId]);
+  }, [notifications]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auth ─────────────────────────────────────────────────────────────────
   const login = (username, password) => {

@@ -1,7 +1,7 @@
 export const demoUsers = [
   {
     id: 1, username: 'shahaly', password: '123456',
-    name: 'Shahaly Talukder', avatar: 'https://i.pravatar.cc/150?img=11',
+    name: 'Shahaly Talukder', avatar: null,
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'January 2022', friends: 0,
@@ -9,7 +9,7 @@ export const demoUsers = [
   },
   {
     id: 2, username: 'abdullah', password: '123456',
-    name: 'Abdullah Al-Faruk', avatar: 'https://i.pravatar.cc/150?img=3',
+    name: 'Abdullah Al-Faruk', avatar: 'https://ui-avatars.com/api/?name=Abdullah+Al-Faruk&background=2d5a1b&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'March 2021', friends: 0,
@@ -17,7 +17,7 @@ export const demoUsers = [
   },
   {
     id: 3, username: 'admin', password: 'admin',
-    name: 'UmmahBook Admin', avatar: 'https://i.pravatar.cc/150?img=50',
+    name: 'UmmahBook Admin', avatar: 'https://ui-avatars.com/api/?name=UmmahBook+Admin&background=1a3d0a&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: 'Admin', title: 'Official Admin',
     joinDate: 'January 2020', friends: 0,
@@ -25,7 +25,7 @@ export const demoUsers = [
   },
   {
     id: 4, username: 'fatima', password: '123456',
-    name: 'ফাতিমা বেগম', avatar: 'https://i.pravatar.cc/150?img=5',
+    name: 'ফাতিমা বেগম', avatar: 'https://ui-avatars.com/api/?name=Fatima+Begum&background=4a7c30&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'June 2022', friends: 0,
@@ -33,7 +33,7 @@ export const demoUsers = [
   },
   {
     id: 5, username: 'umar', password: '123456',
-    name: 'উমার ফারুক', avatar: 'https://i.pravatar.cc/150?img=8',
+    name: 'উমার ফারুক', avatar: 'https://ui-avatars.com/api/?name=Umar+Faruk&background=1d5c0e&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'August 2022', friends: 0,
@@ -41,7 +41,7 @@ export const demoUsers = [
   },
   {
     id: 6, username: 'ayesha', password: '123456',
-    name: 'আয়েশা সিদ্দিকা', avatar: 'https://i.pravatar.cc/150?img=9',
+    name: 'আয়েশা সিদ্দিকা', avatar: 'https://ui-avatars.com/api/?name=Ayesha+Siddika&background=3b7a26&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'October 2022', friends: 0,
@@ -49,7 +49,7 @@ export const demoUsers = [
   },
   {
     id: 7, username: 'ibrahim', password: '123456',
-    name: 'ইব্রাহিম খলিল', avatar: 'https://i.pravatar.cc/150?img=12',
+    name: 'ইব্রাহিম খলিল', avatar: 'https://ui-avatars.com/api/?name=Ibrahim+Khalil&background=255c14&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'February 2022', friends: 0,
@@ -57,7 +57,7 @@ export const demoUsers = [
   },
   {
     id: 8, username: 'khadija', password: '123456',
-    name: 'খাদিজা রহমান', avatar: 'https://i.pravatar.cc/150?img=16',
+    name: 'খাদিজা রহমান', avatar: 'https://ui-avatars.com/api/?name=Khadija+Rahman&background=4e7a2a&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'April 2023', friends: 0,
@@ -65,7 +65,7 @@ export const demoUsers = [
   },
   {
     id: 9, username: 'yusuf', password: '123456',
-    name: 'ইউসুফ আল-ইসলাম', avatar: 'https://i.pravatar.cc/150?img=20',
+    name: 'ইউসুফ আল-ইসলাম', avatar: 'https://ui-avatars.com/api/?name=Yusuf+Islam&background=1e5c0a&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'September 2022', friends: 0,
@@ -73,7 +73,7 @@ export const demoUsers = [
   },
   {
     id: 10, username: 'maryam', password: '123456',
-    name: 'মারইয়াম আখতার', avatar: 'https://i.pravatar.cc/150?img=25',
+    name: 'মারইয়াম আখতার', avatar: 'https://ui-avatars.com/api/?name=Maryam+Akhtar&background=326b1a&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'January 2023', friends: 0,
@@ -81,7 +81,7 @@ export const demoUsers = [
   },
   {
     id: 11, username: 'hasan', password: '123456',
-    name: 'হাসান আলী', avatar: 'https://i.pravatar.cc/150?img=33',
+    name: 'হাসান আলী', avatar: 'https://ui-avatars.com/api/?name=Hasan+Ali&background=285c10&color=fff&size=150',
     coverPhoto: null,
     bio: '', location: '', hometown: '', work: '', education: '', islamicRole: '', title: '',
     joinDate: 'March 2023', friends: 0,
