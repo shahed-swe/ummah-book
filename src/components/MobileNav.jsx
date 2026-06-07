@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaUsers, FaBookOpen, FaPray, FaUser } from 'react-icons/fa';
+import { FaHome, FaUsers, FaBookOpen, FaPray, FaUser, FaHandsHelping } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 
 export default function MobileNav() {
@@ -8,11 +8,11 @@ export default function MobileNav() {
   const { lang, currentUser, darkMode, pendingRequestsCount, unreadCount } = useApp();
 
   const tabs = [
-    { icon: FaHome,  en: 'Home',    bn: 'হোম',    path: '/' },
-    { icon: FaUsers, en: 'Friends', bn: 'বন্ধু',  path: '/groups',       badge: pendingRequestsCount },
-    { icon: FaBookOpen, en: 'Quran', bn: 'কুরআন', path: '/quran',        center: true },
-    { icon: FaPray,  en: 'Prayer',  bn: 'নামাজ',  path: '/prayer-times', badge: 0 },
-    { icon: FaUser,  en: 'Profile', bn: 'প্রোফাইল', path: '/profile',    avatar: true },
+    { icon: FaHome,         en: 'Home',    bn: 'হোম',       path: '/' },
+    { icon: FaBookOpen,     en: 'Quran',   bn: 'কুরআন',     path: '/quran',   center: true },
+    { icon: FaHandsHelping, en: 'Dua',     bn: 'দোয়া',      path: '/dua' },
+    { icon: FaPray,         en: 'Prayer',  bn: 'নামাজ',     path: '/prayer-times', badge: 0 },
+    { icon: FaUser,         en: 'Profile', bn: 'প্রোফাইল',  path: '/profile', avatar: true },
   ];
 
   const bg   = darkMode ? 'rgba(10,26,13,0.97)' : 'rgba(255,255,255,0.97)';

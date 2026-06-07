@@ -40,6 +40,27 @@ function getNextPrayer(timings) {
   return null;
 }
 
+function toHijri(date) {
+  const JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
+  let l = JD - 1948440 + 10632;
+  const n = Math.floor((l - 1) / 10631);
+  l = l - 10631 * n + 354;
+  const j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719)
+    + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
+  l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50)
+    - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+  const month = Math.floor((24 * l) / 709);
+  const day = l - Math.floor((709 * month) / 24);
+  const year = 30 * n + j - 30;
+  const MONTHS_BN = ['মুহাররম','সফর','রবিউল আউয়াল','রবিউস সানি','জুমাদাল উলা','জুমাদাস সানি','রজব','শাবান','রমযান','শাওয়াল','যিলকদ','যিলহজ'];
+  const MONTHS_EN = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Thani','Rajab','Sha\'ban','Ramadan','Shawwal','Dhul Qa\'dah','Dhul Hijjah'];
+  return { day, month, year, monthName: MONTHS_BN[month - 1], monthNameEn: MONTHS_EN[month - 1] };
+}
+
+function toBnDigits(n) {
+  return String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+}
+
 function fmt12(timeStr) {
   if (!timeStr) return '—';
   const [h, m] = timeStr.split(':').map(Number);
@@ -114,6 +135,7 @@ export default function PrayerTimesPage() {
   const nextPrayer = timings ? getNextPrayer(timings) : null;
   const nowMins    = now.getHours() * 60 + now.getMinutes();
   const today      = now.toLocaleDateString(lang === 'en' ? 'en-US' : 'bn-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const hijri      = toHijri(now);
 
   const T = {
     title:   lang === 'en' ? 'Prayer Times'      : 'নামাজের সময়',
@@ -165,6 +187,25 @@ export default function PrayerTimesPage() {
         {/* Arabic */}
         <div className="px-5 pb-4 mt-1">
           <p className="text-center arabic text-green-200/80 text-[14px]">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا</p>
+        </div>
+      </div>
+
+      {/* Hijri Calendar Card */}
+      <div className="rounded-2xl overflow-hidden mb-4 shadow-md"
+        style={{ background: 'linear-gradient(135deg, #1a5c2a 0%, #2d7a3a 50%, #3d6e1a 100%)' }}>
+        <div className="px-5 py-4 flex items-center gap-4">
+          <div className="text-[42px] flex-shrink-0">🗓️</div>
+          <div className="flex-1">
+            <p className="text-green-200 text-[11px] font-semibold uppercase tracking-widest mb-0.5">
+              {lang === 'en' ? 'Hijri Date' : 'হিজরি তারিখ'}
+            </p>
+            <p className="text-white text-[22px] font-bold leading-tight">
+              {lang === 'en'
+                ? `${hijri.day} ${hijri.monthNameEn} ${hijri.year} AH`
+                : `${toBnDigits(hijri.day)} ${hijri.monthName} ${toBnDigits(hijri.year)}`}
+            </p>
+            <p className="text-green-300 text-[12px] mt-0.5">{today}</p>
+          </div>
         </div>
       </div>
 

@@ -17,6 +17,7 @@ import SettingsPage from './pages/SettingsPage'
 import PrayerTimesPage from './pages/PrayerTimesPage'
 import SadaqahPage from './pages/SadaqahPage'
 import UmmahWorldPage from './pages/UmmahWorldPage'
+import DuaPage from './pages/DuaPage'
 
 function PrivateRoute({ children }) {
   const { currentUser, authLoading } = useApp();
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/prayer-times"  element={<PrivateRoute><Layout><PrayerTimesPage /></Layout></PrivateRoute>} />
         <Route path="/sadaqah"       element={<PrivateRoute><Layout><SadaqahPage     /></Layout></PrivateRoute>} />
         <Route path="/ummah-world"   element={<PrivateRoute><Layout><UmmahWorldPage  /></Layout></PrivateRoute>} />
+        <Route path="/dua"           element={<PrivateRoute><Layout><DuaPage          /></Layout></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

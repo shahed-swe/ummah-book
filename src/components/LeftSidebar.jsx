@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaUsers, FaBookOpen, FaMosque, FaStar, FaHeart, FaChevronDown, FaChevronUp, FaGlobe, FaPray, FaCog } from 'react-icons/fa';
+import { FaUsers, FaBookOpen, FaMosque, FaStar, FaHeart, FaChevronDown, FaChevronUp, FaGlobe, FaPray, FaCog, FaHandsHelping } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 import { islamicGroups } from '../data/initialData';
 
 const navItems = [
-  { icon: FaUsers,    en: 'Groups',       bn: 'গ্রুপসমূহ',      path: '/groups' },
-  { icon: FaBookOpen, en: 'Quran',        bn: 'কুরআন ও হাদিস',  path: '/quran' },
-  { icon: FaMosque,   en: 'Profile',      bn: 'প্রোফাইল',        path: '/profile' },
+  { icon: FaUsers,        en: 'Groups',       bn: 'গ্রুপসমূহ',        path: '/groups' },
+  { icon: FaBookOpen,    en: 'Quran',        bn: 'কুরআন ও হাদিস',   path: '/quran' },
+  { icon: FaHandsHelping, en: 'Dua & Tasbih', bn: 'দোয়া ও তাসবীহ', path: '/dua' },
+  { icon: FaMosque,      en: 'Profile',      bn: 'প্রোফাইল',         path: '/profile' },
   { icon: FaPray,     en: 'Prayer Times', bn: 'নামাজের সময়',    path: '/prayer-times' },
   { icon: FaStar,     en: 'Events',       bn: 'ইভেন্টসমূহ',      path: '/events' },
   { icon: FaHeart,    en: 'Sadaqah',      bn: 'সদকা ও দান',      path: '/sadaqah' },

@@ -60,9 +60,22 @@ export function AppProvider({ children }) {
   const [allUsers, setAllUsers] = useState(() => {
     try {
       if (!localStorage.getItem(STORAGE_V)) {
-        ['ub_users','ub_user','ub_userid','ub_token','ub_posts','ub_saved','ub_groups','ub_events']
+        // Only clear derived/cache data — never user profiles or session
+        ['ub_token','ub_posts','ub_saved','ub_groups','ub_events']
           .forEach(k => localStorage.removeItem(k));
         localStorage.setItem(STORAGE_V, '1');
+        // Try to keep any existing user data (so profiles survive version bumps)
+        const prev = localStorage.getItem('ub_users');
+        if (prev) {
+          try {
+            const parsed = JSON.parse(prev);
+            if (parsed?.length && parsed.some(u => u.password)) {
+              return mergeImages(parsed.map(u => ({
+                ...u, friendIds: u.friendIds || [], sentRequests: u.sentRequests || [], receivedRequests: u.receivedRequests || [],
+              })));
+            }
+          } catch {}
+        }
         return mergeImages(freshUsers());
       }
       const stored = JSON.parse(localStorage.getItem('ub_users'));
@@ -111,6 +124,77 @@ export function AppProvider({ children }) {
   const [chatRequest, setChatRequest] = useState(null);
   const openChat = (user) => setChatRequest(user);
 
+  // ── Stories ──────────────────────────────────────────────────────────────
+  const [stories, setStories] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('ub_stories') || '[]');
+      const now = Date.now();
+      return stored.filter(s => now - s.createdAt < 604800000); // expire after 7 days
+    } catch { return []; }
+  });
+
+  const addStory = (storyData) => {
+    if (!currentUser) return;
+    // Never embed base64 avatar — it bloats localStorage and can fail quota silently
+    const safeAvatar = currentUser.avatar?.startsWith('data:') ? null : currentUser.avatar;
+    const s = {
+      id: Date.now(),
+      userId: currentUser.id,
+      name: currentUser.name.split(' ')[0],
+      avatar: safeAvatar,
+      ...storyData,
+      createdAt: Date.now(),
+    };
+    setStories(prev => {
+      const next = [s, ...prev.filter(x => x.userId !== currentUser.id)];
+      try { localStorage.setItem('ub_stories', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const deleteStory = (storyId) => {
+    setStories(prev => prev.filter(s => s.id !== storyId));
+  };
+
+  const updateStory = (storyId, updates) => {
+    setStories(prev => prev.map(s => s.id === storyId ? { ...s, ...updates } : s));
+  };
+
+  const viewStory = (storyId) => {
+    if (!currentUser) return;
+    setStories(prev => prev.map(s => {
+      if (s.id !== storyId) return s;
+      const views = s.views || [];
+      if (views.includes(currentUser.id)) return s;
+      return { ...s, views: [...views, currentUser.id] };
+    }));
+  };
+
+  const reactToStory = (storyId, emoji) => {
+    if (!currentUser) return;
+    setStories(prev => prev.map(s => {
+      if (s.id !== storyId) return s;
+      const reactions = { ...(s.reactions || {}) };
+      if (reactions[currentUser.id] === emoji) delete reactions[currentUser.id];
+      else reactions[currentUser.id] = emoji;
+      return { ...s, reactions };
+    }));
+  };
+
+  // ── Chat messages (localStorage per conversation) ─────────────────────────
+  const getChatKey = (uid1, uid2) => `ub_chat_${Math.min(uid1,uid2)}_${Math.max(uid1,uid2)}`;
+  const loadMsgs   = (uid1, uid2) => { try { return JSON.parse(localStorage.getItem(getChatKey(uid1,uid2)) || '[]'); } catch { return []; } };
+  const saveMsgs   = (uid1, uid2, msgs) => { try { localStorage.setItem(getChatKey(uid1,uid2), JSON.stringify(msgs.slice(-200))); } catch {} };
+  const sendChatMsg = (toUserId, text) => {
+    if (!currentUser || !text.trim()) return;
+    const key  = getChatKey(currentUser.id, toUserId);
+    const prev = loadMsgs(currentUser.id, toUserId);
+    const msg  = { id: Date.now(), from: currentUser.id, text: text.trim(), time: Date.now() };
+    const next = [...prev, msg];
+    localStorage.setItem(key, JSON.stringify(next.slice(-200)));
+    return next;
+  };
+
   // ── Persistence effects ──────────────────────────────────────────────────
   useEffect(() => {
     try { localStorage.setItem('ub_users', JSON.stringify(stripImages(allUsers))); } catch {}
@@ -130,6 +214,7 @@ export function AppProvider({ children }) {
   useEffect(() => { localStorage.setItem('ub_dark', darkMode); }, [darkMode]);
   useEffect(() => { localStorage.setItem('ub_lang', lang); }, [lang]);
   useEffect(() => { localStorage.setItem('ub_saved', JSON.stringify(savedPosts)); }, [savedPosts]);
+  useEffect(() => { try { localStorage.setItem('ub_stories', JSON.stringify(stories)); } catch {} }, [stories]);
   useEffect(() => {
     if (darkMode) document.body.classList.add('dark');
     else document.body.classList.remove('dark');
@@ -336,12 +421,13 @@ export function AppProvider({ children }) {
   const getUserById       = (id)     => allUsers.find(u => u.id === parseInt(id));
 
   // ── Posts ────────────────────────────────────────────────────────────────
-  const addPost = ({ content, image, type, arabic, privacy }) => {
+  const addPost = ({ content, image, video, type, arabic, privacy }) => {
     setPosts(prev => [{
       id: Date.now(),
       user: { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar },
       time: 'এইমাত্র', privacy: privacy || 'public', type: type || 'regular', arabic: arabic || null,
-      content, image: image || null, likes: 0, comments: 0, shares: 0,
+      content, image: image || null, video: video || null,
+      likes: 0, comments: 0, shares: 0,
       reactions: [], userReactions: {}, commentsList: [], savedBy: [],
     }, ...prev]);
   };
@@ -393,7 +479,7 @@ export function AppProvider({ children }) {
       return {
         ...p, comments: p.comments + 1,
         commentsList: [...(p.commentsList || []), {
-          id: Date.now(), user: { name: currentUser.name, avatar: currentUser.avatar }, text, time: 'এইমাত্র',
+          id: Date.now(), user: { name: currentUser.name, avatar: currentUser.avatar }, text, time: 'Just now',
         }],
       };
     }));
@@ -417,6 +503,8 @@ export function AppProvider({ children }) {
       isFriend, hasSentRequest, hasReceivedRequest, getUserById,
       pendingRequestsCount,
       chatRequest, setChatRequest, openChat,
+      stories, addStory, deleteStory, updateStory, viewStory, reactToStory,
+      loadMsgs, saveMsgs, sendChatMsg,
     }}>
       {children}
     </AppContext.Provider>

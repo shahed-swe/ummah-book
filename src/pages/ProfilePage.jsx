@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Post from '../components/Post';
+import CreatePost from '../components/CreatePost';
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 
@@ -611,9 +612,13 @@ export default function ProfilePage() {
 
           {/* Posts tab */}
           {tab==='posts' && (
-            ups.length === 0
-              ? <div className="card p-12 text-center"><p className="text-[44px] mb-3">🕌</p><p className="font-bold text-[17px] text-green-700 mb-1">এখনো কোনো পোস্ট নেই।</p><p className={CS}>প্রথম পোস্ট শেয়ার করুন!</p></div>
-              : ups.map(p => <Post key={p.id} post={p} />)
+            <>
+              {own && <CreatePost />}
+              {ups.length === 0
+                ? <div className="card p-12 text-center"><p className="text-[44px] mb-3">🕌</p><p className="font-bold text-[17px] text-green-700 mb-1">এখনো কোনো পোস্ট নেই।</p><p className={CS}>প্রথম পোস্ট শেয়ার করুন!</p></div>
+                : ups.map(p => <Post key={p.id} post={p} />)
+              }
+            </>
           )}
 
           {/* Photos tab */}

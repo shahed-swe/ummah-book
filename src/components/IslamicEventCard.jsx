@@ -17,7 +17,7 @@ export default function IslamicEventCard() {
     <div className="card overflow-hidden">
       <div className="pattern-bg px-4 py-3 flex items-center justify-between">
         <div>
-          <p className="text-white font-bold text-[15px]">📅 ইসলামিক ���ভেন্ট</p>
+          <p className="text-white font-bold text-[15px]">📅 ইসলামিক ইভেন্ট</p>
           <p className="text-green-300 text-[11px]">আসন্ন অনুষ্ঠান ও কার্যক্রম</p>
         </div>
         <button onClick={() => navigate('/events')} className="text-green-300 text-[13px] font-semibold hover:text-white transition-colors">

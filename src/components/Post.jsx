@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { FaGlobe, FaUserFriends, FaEllipsisH, FaShare, FaRegComment } from 'react-icons/fa';
+import { FaGlobe, FaUserFriends, FaEllipsisH, FaShare, FaRegComment, FaPlay } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
+
+const t = (lang, bn, en) => lang === 'en' ? en : bn;
 
 const REACTIONS = [
   { emoji: '🤲', label: 'Dua',          color: '#1a5c2a' },
@@ -21,7 +23,8 @@ const TYPE_STYLES = {
 };
 
 export default function Post({ post }) {
-  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts, allUsers } = useApp();
+  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts, allUsers, lang } = useApp();
+  const [videoError, setVideoError] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [pickerPos,     setPickerPos]     = useState({ x: 0, y: 0 });
   const [showComments,  setShowComments]  = useState(false);
@@ -152,8 +155,8 @@ export default function Post({ post }) {
                 className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>{isSaved ? '✅' : '🔖'}</span>
                 <div>
-                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">{isSaved ? 'Saved' : 'Save Post'}</p>
-                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">{isSaved ? t(lang,'সংরক্ষিত','Saved') : t(lang,'পোস্ট সংরক্ষণ','Save Post')}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{isSaved ? t(lang,'সরিয়ে ফেলতে ট্যাপ করুন','Tap to unsave') : t(lang,'পরে পড়ার জন্য সংরক্ষণ করুন','Save for later')}</p>
                 </div>
               </button>
               {currentUser && post.user.id === currentUser.id && (
@@ -161,8 +164,8 @@ export default function Post({ post }) {
                   className="w-full text-left px-4 py-3 text-[13px] hover:bg-red-50 dark:hover:bg-[#2d1414] text-red-600 transition-colors font-medium flex items-center gap-2">
                   <span>🗑️</span>
                   <div>
-                    <p className="font-bold text-[12px]">Delete Post</p>
-                    <p className="text-[11px] opacity-80">পোস্ট মুছুন</p>
+                    <p className="font-bold text-[12px]">{t(lang,'পোস্ট মুছুন','Delete Post')}</p>
+                    <p className="text-[11px] opacity-80">{t(lang,'স্থায়ীভাবে মুছে যাবে','Will be permanently deleted')}</p>
                   </div>
                 </button>
               )}
@@ -170,16 +173,16 @@ export default function Post({ post }) {
                 className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>🔕</span>
                 <div>
-                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">Hide Post</p>
-                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">পোস্ট লুকান</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">{t(lang,'পোস্ট লুকান','Hide Post')}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{t(lang,'ফিডে আর দেখাবে না','Won\'t show in feed')}</p>
                 </div>
               </button>
               <button onClick={() => setShowMenu(false)}
                 className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>🚫</span>
                 <div>
-                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">Report</p>
-                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">রিপোর্ট করুন</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">{t(lang,'রিপোর্ট করুন','Report')}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{t(lang,'আপত্তিকর কন্টেন্ট রিপোর্ট করুন','Report inappropriate content')}</p>
                 </div>
               </button>
             </div>
@@ -200,8 +203,36 @@ export default function Post({ post }) {
       </div>
 
       {/* Image */}
-      {post.image && (
+      {post.image && !post.video && (
         <img src={post.image} alt="post" className="w-full object-cover max-h-[400px] cursor-pointer hover:brightness-95 transition-all" />
+      )}
+
+      {/* Video */}
+      {post.video && !videoError && (
+        <div className="relative bg-black">
+          <video
+            src={post.video}
+            controls
+            className="w-full max-h-[400px]"
+            poster={post.image || undefined}
+            onError={() => setVideoError(true)}
+          />
+          <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+            <FaPlay className="text-[7px]" /> Video
+          </div>
+        </div>
+      )}
+
+      {/* Video expired / error fallback */}
+      {post.video && videoError && (
+        <div className="mx-4 mb-3 bg-gray-50 dark:bg-[#142d18] border-2 border-dashed border-gray-200 dark:border-[#1a4a20] rounded-xl flex flex-col items-center justify-center py-8 gap-2">
+          {post.image
+            ? <img src={post.image} alt="thumbnail" className="w-full max-h-[200px] object-cover rounded-lg opacity-60" />
+            : <span className="text-[40px]">🎬</span>}
+          <p className="text-[13px] text-gray-400 dark:text-[#4a7a50] font-medium">
+            {t(lang, 'ভিডিও আর পাওয়া যাচ্ছে না', 'Video no longer available')}
+          </p>
+        </div>
       )}
 
       {/* Reaction counts */}
@@ -225,7 +256,9 @@ export default function Post({ post }) {
             </div>
             <button onClick={() => setShowComments(!showComments)}
               className="text-[14px] text-gray-500 dark:text-[#4a7a50] hover:underline">
-              {post.comments > 0 && `${post.comments} Comments`}{post.comments > 0 && post.shares > 0 && ' · '}{post.shares > 0 && `${post.shares} Shares`}
+              {post.comments > 0 && `${post.comments} ${t(lang,'মন্তব্য','Comments')}`}
+              {post.comments > 0 && post.shares > 0 && ' · '}
+              {post.shares > 0 && `${post.shares} ${t(lang,'শেয়ার','Shares')}`}
             </button>
           </div>
         );
@@ -250,10 +283,10 @@ export default function Post({ post }) {
           <span className="text-[20px] leading-none">{reactionObj ? reactionObj.emoji : '🤲'}</span>
           <div className="text-left leading-tight min-w-0">
             <p className="font-bold text-[12px] truncate" style={{ color: reactionObj ? reactionObj.color : '#4b5563' }}>
-              {myReaction || 'Dua'}
+              {myReaction || t(lang, "দু'আ", 'Dua')}
             </p>
             <p className="text-[10px] text-gray-400 dark:text-[#4a7a50] truncate">
-              {myReaction ? 'রিয়েক্ট হয়েছে' : "দু'আ করুন"}
+              {myReaction ? t(lang,'রিয়েক্ট হয়েছে','Reacted') : t(lang,"দু'আ করুন",'Make Dua')}
             </p>
           </div>
         </button>
@@ -265,8 +298,8 @@ export default function Post({ post }) {
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors active:scale-95">
           <FaRegComment className="text-[18px] text-gray-500 dark:text-[#4a7a50]" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">Comment</p>
-            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">মন্তব্য</p>
+            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">{t(lang,'মন্তব্য','Comment')}</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">{t(lang,'মতামত দিন','Share thoughts')}</p>
           </div>
         </button>
 
@@ -277,8 +310,8 @@ export default function Post({ post }) {
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors active:scale-95">
           <FaShare className="text-[18px] text-gray-500 dark:text-[#4a7a50]" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">Share</p>
-            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">শেয়ার</p>
+            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">{t(lang,'শেয়ার','Share')}</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">{t(lang,'ছড়িয়ে দিন','Spread the word')}</p>
           </div>
         </button>
       </div>
@@ -323,7 +356,7 @@ export default function Post({ post }) {
                 className="w-8 h-8 rounded-full object-cover border-2 border-green-400 flex-shrink-0" />
               <div className="flex-1 relative">
                 <input type="text" value={comment} onChange={e => setComment(e.target.value)}
-                  placeholder="Write a comment / মন্তব্য লিখুন... 🤲"
+                  placeholder={t(lang, 'মন্তব্য লিখুন... 🤲', 'Write a comment... 🤲')}
                   className="w-full bg-green-50 dark:bg-[#142d18] border border-green-200 dark:border-[#1a4a20] rounded-full px-4 py-2 text-[14px] text-gray-800 dark:text-[#e8f5e9] placeholder-green-400 dark:placeholder-[#2d5a35] outline-none focus:border-green-400 pr-10"
                   style={{ fontSize:'16px' }} />
                 <button type="submit" disabled={!comment.trim()}
