@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage'
 import QuranPage from './pages/QuranPage'
 import GroupsPage from './pages/GroupsPage'
 import EventsPage from './pages/EventsPage'
+import SettingsPage from './pages/SettingsPage'
 
 function PrivateRoute({ children }) {
   const { currentUser, authLoading } = useApp();
@@ -28,18 +29,18 @@ function PrivateRoute({ children }) {
   return currentUser ? children : <Navigate to="/login" replace />;
 }
 
-function Layout({ children }) {
+function Layout({ children, wide = false }) {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg, #f0f4f0)' }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--bg, #f0f4f0)' }}>
       <Navbar />
       <div className="pt-[56px] flex min-h-screen">
         <LeftSidebar />
-        <main className="flex-1 flex justify-center py-4 lg:ml-[280px] xl:mr-[280px] mb-16 lg:mb-0">
-          <div className="w-full max-w-[590px] px-3">
+        <main className={`flex-1 flex justify-center py-4 lg:ml-[280px] mb-24 lg:mb-0 ${wide ? '' : 'xl:mr-[280px]'}`}>
+          <div className={`w-full px-3 ${wide ? 'max-w-[920px]' : 'max-w-[590px]'}`}>
             {children}
           </div>
         </main>
-        <RightSidebar />
+        {!wide && <RightSidebar />}
       </div>
       <FloatingChat />
       <ScrollToTop />
@@ -58,7 +59,8 @@ export default function App() {
         <Route path="/profile/:userId" element={<PrivateRoute><Layout><ProfilePage /></Layout></PrivateRoute>} />
         <Route path="/quran" element={<PrivateRoute><Layout><QuranPage /></Layout></PrivateRoute>} />
         <Route path="/groups" element={<PrivateRoute><Layout><GroupsPage /></Layout></PrivateRoute>} />
-        <Route path="/events" element={<PrivateRoute><Layout><EventsPage /></Layout></PrivateRoute>} />
+        <Route path="/events"    element={<PrivateRoute><Layout><EventsPage    /></Layout></PrivateRoute>} />
+        <Route path="/settings"  element={<PrivateRoute><Layout wide><SettingsPage  /></Layout></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,32 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaTimes, FaEdit, FaSearch } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
 
-const messages = {
-  2: [
-    { from: 'them', text: 'السَّلَامُ عَلَيْكُمْ ভাই! কেমন আছেন?', time: '২:৩০' },
-    { from: 'me', text: 'ওয়ালাইকুমুস সালাম! আলহামদুলিল্লাহ, ভালো আছি। আপনি?', time: '২:৩১' },
-    { from: 'them', text: 'মাশাআল্লাহ! আজকের জুমার জন্য প্রস্তুত তো? 🕌', time: '২:৩২' },
-  ],
-  4: [
-    { from: 'them', text: 'আস-সালামু আলাইকুম আপু!', time: '৩:১০' },
-    { from: 'me', text: 'ওয়ালাইকুমুস সালাম! কেমন আছেন?', time: '৩:১১' },
-  ],
-};
-
 function ChatWindow({ contact, onClose }) {
   const [text, setText] = useState('');
-  const [msgs, setMsgs] = useState(messages[contact.id] || []);
+  const [msgs, setMsgs] = useState([
+    { from: 'them', text: 'السَّلَامُ عَلَيْكُمْ! কেমন আছেন?', time: 'এইমাত্র' },
+  ]);
 
   const send = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    setMsgs([...msgs, { from: 'me', text, time: 'এখন' }]);
+    setMsgs([...msgs, { from: 'me', text, time: 'এইমাত্র' }]);
     setText('');
   };
 
   return (
-    <div className="w-[320px] bg-white rounded-t-2xl shadow-2xl border border-green-200 flex flex-col fade-in" style={{ height: '420px' }}>
+    <div className="w-[calc(100vw-2rem)] max-w-[320px] bg-white rounded-t-2xl shadow-2xl border border-green-200 flex flex-col fade-in" style={{ height: '420px' }}>
       <div className="flex items-center gap-3 px-4 py-3 border-b border-green-100 bg-gradient-to-r from-green-700 to-green-800 rounded-t-2xl">
         <div className="relative">
           <img src={contact.avatar} alt={contact.name} className="w-9 h-9 rounded-full object-cover border-2 border-green-400" />
@@ -73,22 +63,37 @@ function ChatWindow({ contact, onClose }) {
 }
 
 export default function FloatingChat() {
-  const { contacts } = useApp();
+  const { currentUser, allUsers, contacts, chatRequest, setChatRequest } = useApp();
   const [open, setOpen] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
   const [search, setSearch] = useState('');
 
-  const onlineContacts = contacts.filter(c => c.online);
-  const filtered = contacts.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  // Open chat when triggered from another component (e.g. profile page Message button)
+  useEffect(() => {
+    if (chatRequest) {
+      setActiveChat(chatRequest);
+      setOpen(false);
+      setChatRequest(null);
+    }
+  }, [chatRequest]);
+
+  // Only show friends as chat contacts
+  const friendIds = currentUser?.friendIds || [];
+  const friendContacts = contacts.filter(c => friendIds.includes(c.id));
+
+  const onlineCount = friendContacts.filter(c => c.online).length;
+  const filtered = friendContacts.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="fixed bottom-0 right-4 z-40 flex items-end gap-3">
+    <div className="fixed bottom-24 lg:bottom-4 right-4 z-40 flex items-end gap-3">
       {activeChat && (
         <ChatWindow contact={activeChat} onClose={() => setActiveChat(null)} />
       )}
 
       {open && (
-        <div className="w-[300px] bg-white rounded-t-2xl shadow-2xl border border-green-200 fade-in" style={{ maxHeight: '420px' }}>
+        <div className="w-[calc(100vw-2rem)] max-w-[300px] bg-white rounded-t-2xl shadow-2xl border border-green-200 fade-in" style={{ maxHeight: '420px' }}>
           <div className="flex items-center justify-between px-4 py-3 border-b border-green-100 bg-gradient-to-r from-green-700 to-green-800 rounded-t-2xl">
             <p className="font-bold text-white text-[16px]">✉️ মেসেজ</p>
             <div className="flex items-center gap-1">
@@ -111,7 +116,14 @@ export default function FloatingChat() {
           </div>
 
           <div className="overflow-y-auto" style={{ maxHeight: '300px' }}>
-            {filtered.map(contact => (
+            {filtered.length === 0 ? (
+              <div className="py-8 text-center text-[13px] text-green-600">
+                {friendContacts.length === 0
+                  ? <><p className="text-[28px] mb-2">👥</p><p>বন্ধু যোগ করুন</p><p className="text-[11px] text-gray-400 mt-1">বন্ধু হলে চ্যাট করতে পারবেন</p></>
+                  : <><p className="text-[28px] mb-2">🔍</p><p>কোনো ফলাফল নেই</p></>
+                }
+              </div>
+            ) : filtered.map(contact => (
               <button key={contact.id}
                 onClick={() => { setActiveChat(contact); setOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 transition-colors text-left">
@@ -134,9 +146,9 @@ export default function FloatingChat() {
           className="w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-110 relative"
           style={{ background: 'linear-gradient(135deg, #1a5c2a, #2d7a3a)' }}>
           <span className="text-[24px]">💬</span>
-          {onlineContacts.length > 0 && (
+          {onlineCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
-              {onlineContacts.length}
+              {onlineCount}
             </span>
           )}
         </button>

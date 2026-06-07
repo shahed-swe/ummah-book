@@ -1,9 +1,24 @@
 import { FaPlus } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
-import { initialStories } from '../data/initialData';
+
+const STORY_LABELS = [
+  'Quran Recitation', 'Islamic Reminder', 'Hadith of the Day',
+  "Dua & Dhikr", 'SubhanAllah', 'Alhamdulillah',
+];
 
 export default function Stories() {
-  const { currentUser } = useApp();
+  const { currentUser, allUsers } = useApp();
+
+  const storyUsers = allUsers
+    .filter(u => u.id !== currentUser?.id)
+    .slice(0, 6)
+    .map((u, i) => ({
+      id: u.id,
+      name: u.name,
+      avatar: u.avatar,
+      bg: `https://picsum.photos/seed/${u.username}story/200/350`,
+      label: STORY_LABELS[i % STORY_LABELS.length],
+    }));
 
   return (
     <div>
@@ -26,8 +41,8 @@ export default function Stories() {
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
         </div>
 
-        {/* Friend Stories */}
-        {initialStories.map((story) => (
+        {/* User Stories */}
+        {storyUsers.map((story) => (
           <div key={story.id} className="relative flex-shrink-0 w-[112px] h-[195px] rounded-xl overflow-hidden cursor-pointer shadow-sm group border border-green-100">
             <img src={story.bg} alt={story.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 story-gradient" />

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable dark: prefix to work with body.dark class */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   * { box-sizing: border-box; }
 
@@ -76,6 +79,18 @@
   .story-gradient {
     background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%);
   }
+}
+
+/* ── Mobile usability ────────────────────────────────── */
+
+/* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
+@media screen and (max-width: 640px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+
+/* Remove 300ms tap delay on all interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
 }
 
 @keyframes fadeIn {

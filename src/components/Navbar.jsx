@@ -16,7 +16,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { currentUser, unreadCount, pendingRequestsCount } = useApp();
+  const { currentUser, unreadCount, pendingRequestsCount, lang } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -96,8 +96,7 @@ export default function Navbar() {
                   active ? 'bg-white/15 border-b-[3px] border-yellow-400 text-yellow-300' : ''
                 }`}>
                 <Icon className="text-[17px]" />
-                <span className="text-[9px] mt-0.5 font-bold">{en}</span>
-                <span className="text-[8px] opacity-80">{bn}</span>
+                <span className="text-[9px] mt-0.5 font-bold">{lang === 'en' ? en : bn}</span>
               </button>
             );
           })}
@@ -161,20 +160,27 @@ export default function Navbar() {
       {showMobileSearch && (
         <div className="md:hidden absolute top-[56px] left-0 right-0 bg-green-800 px-3 py-2 shadow-lg z-40">
           <div className="relative" ref={searchRef}>
-            <div className="flex items-center bg-white/20 rounded-full px-3 py-2 gap-2">
-              <FaSearch className="text-green-200 text-sm flex-shrink-0" />
-              <input
-                autoFocus
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                type="text"
-                placeholder="Search people / মানুষ খুঁজুন..."
-                className="bg-transparent outline-none text-sm w-full placeholder-green-300 text-white" />
-              {search && (
-                <button onClick={() => setSearch('')}>
-                  <FaTimes className="text-green-200 text-xs" />
-                </button>
-              )}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center bg-white/20 rounded-full px-3 py-2 gap-2">
+                <FaSearch className="text-green-200 text-sm flex-shrink-0" />
+                <input
+                  autoFocus
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  type="text"
+                  placeholder="মানুষ খুঁজুন..."
+                  className="bg-transparent outline-none text-sm w-full placeholder-green-300 text-white" />
+                {search && (
+                  <button onClick={() => setSearch('')}>
+                    <FaTimes className="text-green-200 text-xs" />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => { setSearch(''); setShowMobileSearch(false); }}
+                className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <FaTimes className="text-white text-sm" />
+              </button>
             </div>
             {showSearch && (
               <SearchPanel query={search} onClose={() => { setSearch(''); setShowMobileSearch(false); }} />

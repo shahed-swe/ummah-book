@@ -15,7 +15,7 @@ export default function ScrollToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-20 right-4 z-40 w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 fade-in"
+      className="fixed bottom-20 left-3 lg:left-auto lg:right-4 z-40 w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 fade-in"
       style={{ background: 'linear-gradient(135deg, #1a5c2a, #2d7a3a)' }}
       title="Back to top"
     >

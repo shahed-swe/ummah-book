@@ -62,17 +62,17 @@ export default function EventsPage() {
         {events.map(ev => (
           <div key={ev.id} className="card overflow-hidden hover:shadow-lg transition-all fade-in">
             <div className={`bg-gradient-to-r ${ev.color} p-4`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-[36px]">{ev.emoji}</span>
-                  <div>
-                    <h3 className="font-bold text-white text-[16px]">{ev.title}</h3>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[28px] sm:text-[36px] shrink-0">{ev.emoji}</span>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-white text-[14px] sm:text-[16px] leading-snug">{ev.title}</h3>
                     <span className="text-[10px] bg-white/25 text-white px-2 py-0.5 rounded-full font-semibold">{ev.type}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-[15px]">{ev.date}</p>
-                  <p className="text-green-100 text-[12px]">{ev.time}</p>
+                <div className="text-right shrink-0">
+                  <p className="text-white font-bold text-[13px] sm:text-[15px]">{ev.date}</p>
+                  <p className="text-green-100 text-[11px] sm:text-[12px]">{ev.time}</p>
                 </div>
               </div>
             </div>

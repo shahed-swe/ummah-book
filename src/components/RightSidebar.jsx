@@ -36,7 +36,7 @@ function PrayerCard() {
           )}
         </div>
       </div>
-      <div className="bg-white divide-y divide-green-50">
+      <div className="bg-white dark:bg-[#0f2313] divide-y divide-green-50 dark:divide-[#1a4a20]">
         {data.prayers.map((p) => (
           <div key={p.key} className={`px-4 py-2.5 transition-colors ${
             p.isCurrent ? 'bg-green-50' : p.isNext ? 'bg-yellow-50/40' : ''
@@ -46,7 +46,7 @@ function PrayerCard() {
               <div className="flex items-center gap-2">
                 <span className="text-[18px]">{p.icon}</span>
                 <div className="leading-tight">
-                  <span className={`text-[13px] font-bold block ${p.isCurrent ? 'text-green-700' : 'text-gray-800'}`}>
+                  <span className={`text-[13px] font-bold block ${p.isCurrent ? 'text-green-700 dark:text-[#4ade80]' : 'text-gray-800 dark:text-[#c8e6c9]'}`}>
                     {p.name} · {p.bn}
                   </span>
                   <span className="text-[11px] text-gray-400">
@@ -91,7 +91,7 @@ function TrendingTopics() {
   ];
 
   return (
-    <div className="bg-white border border-green-100 rounded-xl overflow-hidden mb-4 shadow-sm">
+    <div className="bg-white dark:bg-[#0f2313] border border-green-100 dark:border-[#1a4a20] rounded-xl overflow-hidden mb-4 shadow-sm">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-green-100">
         <FaHashtag className="text-green-600" />
         <div>
@@ -104,8 +104,8 @@ function TrendingTopics() {
           <button key={t.tag}
             className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-green-50 transition-colors text-left">
             <div>
-              <p className="text-[13px] text-green-700 font-bold">{t.tag}</p>
-              <p className="text-[11px] text-gray-500">{t.posts}</p>
+              <p className="text-[13px] text-green-700 dark:text-[#4ade80] font-bold">{t.tag}</p>
+              <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{t.posts}</p>
             </div>
             <span className="text-[12px] text-gray-400 font-medium">#{i + 1}</span>
           </button>
@@ -123,7 +123,7 @@ export default function RightSidebar() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden xl:block fixed right-0 top-[56px] h-[calc(100vh-56px)] w-[280px] overflow-y-auto bg-white border-l border-green-100">
+    <aside className="hidden xl:block fixed right-0 top-[56px] h-[calc(100vh-56px)] w-[280px] overflow-y-auto bg-white dark:bg-[#0a1a0d] border-l border-green-100 dark:border-[#1a4a20]">
       <div className="p-3">
 
         <PrayerCard />

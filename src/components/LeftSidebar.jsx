@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaUsers, FaBookOpen, FaMosque, FaStar, FaHeart, FaChevronDown, FaChevronUp, FaGlobe, FaPray } from 'react-icons/fa';
+import { FaUsers, FaBookOpen, FaMosque, FaStar, FaHeart, FaChevronDown, FaChevronUp, FaGlobe, FaPray, FaCog } from 'react-icons/fa';
 import { useApp } from '../context/AppContext';
+import { islamicGroups } from '../data/initialData';
 
 const navItems = [
   { icon: FaUsers,    en: 'Groups',       bn: 'গ্রুপসমূহ',      path: '/groups' },
@@ -11,21 +12,22 @@ const navItems = [
   { icon: FaStar,     en: 'Events',       bn: 'ইভেন্টসমূহ',      path: '/events' },
   { icon: FaHeart,    en: 'Sadaqah',      bn: 'সদকা ও দান',      path: null },
   { icon: FaGlobe,    en: 'Ummah World',  bn: 'উম্মাহ ওয়ার্ল্ড', path: null },
+  { icon: FaCog,      en: 'Settings',     bn: 'সেটিংস',           path: '/settings' },
 ];
 
-const groups = [
-  { name: 'বাংলাদেশ ইসলামিক ফোরাম', img: 'https://picsum.photos/seed/isg1/40/40', members: '৪৫K সদস্য' },
-  { name: 'Quran Learners BD',      img: 'https://picsum.photos/seed/isg2/40/40', members: '২৮K সদস্য' },
-  { name: 'Hadith Daily',           img: 'https://picsum.photos/seed/isg3/40/40', members: '৬২K সদস্য' },
-  { name: 'Islamic Sisters Network',img: 'https://picsum.photos/seed/isg4/40/40', members: '১৯K সদস্য' },
-];
 
 export default function LeftSidebar() {
-  const { currentUser } = useApp();
+  const { currentUser, lang } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [showMore, setShowMore] = useState(false);
   const visible = showMore ? navItems : navItems.slice(0, 5);
+
+  const allGroups = (() => {
+    try { return JSON.parse(localStorage.getItem('ub_groups') || 'null') || islamicGroups; }
+    catch { return islamicGroups; }
+  })();
+  const joinedGroups = allGroups.filter(g => g.joined).slice(0, 4);
 
   return (
     <aside className="hidden lg:block fixed left-0 top-[56px] h-[calc(100vh-56px)] w-[280px] overflow-y-auto sidebar-bg border-r border-green-100">
@@ -65,8 +67,7 @@ export default function LeftSidebar() {
                 <Icon className={`text-[16px] ${active ? 'text-white' : 'text-green-700'}`} />
               </div>
               <div className="leading-tight">
-                <p className="font-bold text-[13px] text-green-900">{en}</p>
-                <p className="text-[11px] text-green-600">{bn}</p>
+                <p className="font-bold text-[13px] text-green-900">{lang === 'en' ? en : bn}</p>
               </div>
             </button>
           );
@@ -78,8 +79,11 @@ export default function LeftSidebar() {
             {showMore ? <FaChevronUp className="text-green-700 text-sm" /> : <FaChevronDown className="text-green-700 text-sm" />}
           </div>
           <div className="leading-tight">
-            <p className="font-bold text-[13px] text-green-900">{showMore ? 'Show Less' : 'Show More'}</p>
-            <p className="text-[11px] text-green-600">{showMore ? 'কম দেখুন' : 'আরো দেখুন'}</p>
+            <p className="font-bold text-[13px] text-green-900">
+              {showMore
+                ? (lang === 'en' ? 'Show Less' : 'কম দেখুন')
+                : (lang === 'en' ? 'Show More' : 'আরো দেখুন')}
+            </p>
           </div>
         </button>
 
@@ -87,16 +91,23 @@ export default function LeftSidebar() {
 
         {/* Groups */}
         <div className="mb-2 px-2">
-          <p className="text-[14px] font-bold text-green-800">Islamic Groups</p>
-          <p className="text-[11px] text-green-600">ইসলামিক গ্রুপ</p>
+          <p className="text-[14px] font-bold text-green-800">{lang === 'en' ? 'Islamic Groups' : 'ইসলামিক গ্রুপ'}</p>
         </div>
-        {groups.map((g) => (
-          <button key={g.name} onClick={() => navigate('/groups')}
+        {joinedGroups.length === 0 ? (
+          <button onClick={() => navigate('/groups')}
+            className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-green-50 transition-colors text-left mb-1">
+            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-[16px]">👥</span>
+            </div>
+            <p className="text-[13px] text-green-600 italic">কোনো গ্রুপে যোগ দেননি → গ্রুপ দেখুন</p>
+          </button>
+        ) : joinedGroups.map((g) => (
+          <button key={g.id} onClick={() => navigate('/groups')}
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-green-50 transition-colors text-left mb-1">
             <img src={g.img} alt={g.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-green-200" />
             <div>
               <p className="font-medium text-[13px] text-green-900 leading-tight">{g.name}</p>
-              <p className="text-[11px] text-green-600">{g.members}</p>
+              <p className="text-[11px] text-green-600">{(g.members / 1000).toFixed(1)}k সদস্য</p>
             </div>
           </button>
         ))}

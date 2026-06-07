@@ -5,42 +5,51 @@ import { FaGlobe, FaUserFriends, FaEllipsisH, FaShare, FaRegComment } from 'reac
 import { useApp } from '../context/AppContext';
 
 const REACTIONS = [
-  { emoji: '🤲', label: 'Dua', color: '#1a5c2a' },
-  { emoji: '❤️', label: 'Love', color: '#e41e3f' },
+  { emoji: '🤲', label: 'Dua',          color: '#1a5c2a' },
+  { emoji: '❤️', label: 'Love',         color: '#e41e3f' },
   { emoji: '😊', label: 'Alhamdulillah', color: '#2d7a3a' },
-  { emoji: '😢', label: 'Sad', color: '#666' },
-  { emoji: '🌟', label: 'MashaAllah', color: '#b8860b' },
-  { emoji: '👍', label: 'Like', color: '#1a5c2a' },
+  { emoji: '😢', label: 'Sad',          color: '#666'    },
+  { emoji: '🌟', label: 'MashaAllah',   color: '#b8860b' },
+  { emoji: '👍', label: 'Like',         color: '#1a5c2a' },
 ];
 
 const TYPE_STYLES = {
-  quran:    { bg: 'from-green-700 to-green-900',   en: 'Quran Ayat',       bn: 'কুরআন আয়াত',   emoji: '📖', text: 'text-green-300' },
+  quran:    { bg: 'from-green-700 to-green-900',   en: 'Quran Ayat',       bn: 'কুরআন আয়াত',   emoji: '📖', text: 'text-green-300'   },
   hadith:   { bg: 'from-emerald-700 to-teal-900',  en: 'Hadith',           bn: 'হাদিস',         emoji: '📜', text: 'text-emerald-300' },
-  reminder: { bg: 'from-green-800 to-green-600',   en: 'Islamic Reminder', bn: 'ইসলামিক স্মরণ', emoji: '🌙', text: 'text-green-200' },
-  dua:      { bg: 'from-teal-700 to-green-800',    en: 'Dua & Dhikr',      bn: 'দু\'আ ও যিকর',  emoji: '🤲', text: 'text-teal-200' },
+  reminder: { bg: 'from-green-800 to-green-600',   en: 'Islamic Reminder', bn: 'ইসলামিক স্মরণ', emoji: '🌙', text: 'text-green-200'   },
+  dua:      { bg: 'from-teal-700 to-green-800',    en: "Dua & Dhikr",      bn: "দু'আ ও যিকর",  emoji: '🤲', text: 'text-teal-200'    },
 };
 
 export default function Post({ post }) {
-  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts } = useApp();
+  const { currentUser, toggleLike, addComment, sharePost, toggleSave, deletePost, savedPosts, allUsers } = useApp();
   const [showReactions, setShowReactions] = useState(false);
-  const [pickerPos, setPickerPos]       = useState({ x: 0, y: 0 });
-  const [showComments, setShowComments] = useState(false);
-  const [comment, setComment]           = useState('');
-  const [showMenu, setShowMenu]         = useState(false);
+  const [pickerPos,     setPickerPos]     = useState({ x: 0, y: 0 });
+  const [showComments,  setShowComments]  = useState(false);
+  const [comment,       setComment]       = useState('');
+  const [showMenu,      setShowMenu]      = useState(false);
 
   const duaBtnRef      = useRef(null);
   const hoverTimer     = useRef(null);
   const longPressTimer = useRef(null);
   const longFired      = useRef(false);
 
-  const myReaction = currentUser ? (post.userReactions || {})[currentUser.id] : null;
+  // Always show the LATEST avatar/name for the post author
+  const liveUser = allUsers.find(u => u.id === post.user.id);
+  const displayUser = liveUser
+    ? { ...post.user, avatar: liveUser.avatar, name: liveUser.name }
+    : post.user;
+
+  const myReaction  = currentUser ? (post.userReactions || {})[currentUser.id] : null;
   const reactionObj = REACTIONS.find(r => r.label === myReaction);
-  const isSaved = savedPosts.includes(post.id);
+  const isSaved     = savedPosts.includes(post.id);
 
   const openPicker = () => {
     if (duaBtnRef.current) {
       const r = duaBtnRef.current.getBoundingClientRect();
-      setPickerPos({ x: Math.max(8, r.left - 30), y: r.top - 62 });
+      setPickerPos({
+        x: Math.max(8, Math.min(r.left - 30, window.innerWidth - 270)),
+        y: Math.max(64, r.top - 62),
+      });
     }
     setShowReactions(true);
   };
@@ -50,17 +59,12 @@ export default function Post({ post }) {
     setShowReactions(false);
   };
 
-  // Desktop: hover 500ms → open picker
   const onMouseEnter = () => { hoverTimer.current = setTimeout(openPicker, 500); };
   const onMouseLeave = () => { clearTimeout(hoverTimer.current); };
 
-  // Mobile: long press 500ms → open picker; short tap → Dua directly
   const onTouchStart = () => {
     longFired.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longFired.current = true;
-      openPicker();
-    }, 500);
+    longPressTimer.current = setTimeout(() => { longFired.current = true; openPicker(); }, 500);
   };
   const onTouchEnd = () => clearTimeout(longPressTimer.current);
 
@@ -88,11 +92,12 @@ export default function Post({ post }) {
     setShowMenu(false);
   };
 
-  const typeStyle = TYPE_STYLES[post.type] || TYPE_STYLES.reminder;
+  const typeStyle   = TYPE_STYLES[post.type] || TYPE_STYLES.reminder;
   const commentsList = post.commentsList || [];
 
   return (
-    <div className="card overflow-hidden fade-in">
+    <div id={`post-${post.id}`} className="card overflow-hidden fade-in">
+
       {/* Type banner */}
       <div className={`bg-gradient-to-r ${typeStyle.bg} px-4 py-1.5 flex items-center justify-between`}>
         <div className="flex items-center gap-1.5">
@@ -105,46 +110,48 @@ export default function Post({ post }) {
         <span className="text-green-200 text-[11px] arabic">بِسْمِ اللَّهِ</span>
       </div>
 
-      {/* Header */}
+      {/* Post header */}
       <div className="flex items-start justify-between px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <img src={post.user.avatar} alt={post.user.name} className="w-10 h-10 rounded-full object-cover border-2 border-green-400" />
+            <img src={displayUser.avatar} alt={displayUser.name}
+              className="w-10 h-10 rounded-full object-cover border-2 border-green-400" />
             <span className="absolute -bottom-1 -right-1 text-xs">☪️</span>
           </div>
           <div>
-            <Link to={`/profile/${post.user.id}`} className="font-bold text-[15px] hover:underline text-green-900">
-              {post.user.name}
+            <Link to={`/profile/${post.user.id}`}
+              className="font-bold text-[15px] hover:underline text-green-900 dark:text-[#e8f5e9]">
+              {displayUser.name}
             </Link>
-            <div className="flex items-center gap-1 text-[#65676b] text-[12px]">
-              <span className="text-green-600">{post.time}</span>
-              <span>·</span>
+            <div className="flex items-center gap-1 text-[12px]">
+              <span className="text-green-600 dark:text-[#6abf69]">{post.time}</span>
+              <span className="text-gray-400 dark:text-[#4a7a50]">·</span>
               {post.privacy === 'public'
-                ? <FaGlobe className="text-[11px] text-green-600" />
-                : <FaUserFriends className="text-[11px] text-green-600" />}
+                ? <FaGlobe className="text-[11px] text-green-600 dark:text-[#4a7a50]" />
+                : <FaUserFriends className="text-[11px] text-green-600 dark:text-[#4a7a50]" />}
             </div>
           </div>
         </div>
 
-        {/* Menu */}
+        {/* ⋯ menu */}
         <div className="relative">
           <button onClick={() => setShowMenu(!showMenu)}
-            className="w-9 h-9 rounded-full hover:bg-green-50 flex items-center justify-center transition-colors">
-            <FaEllipsisH className="text-[#65676b]" />
+            className="w-9 h-9 rounded-full hover:bg-green-50 dark:hover:bg-[#142d18] flex items-center justify-center transition-colors">
+            <FaEllipsisH className="text-gray-500 dark:text-[#4a7a50]" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-10 bg-white rounded-xl shadow-xl w-[220px] z-20 border border-green-100 overflow-hidden">
+            <div className="absolute right-0 top-10 bg-white dark:bg-[#0f2313] rounded-xl shadow-xl w-[220px] z-20 border border-green-100 dark:border-[#1a4a20] overflow-hidden">
               <button onClick={handleSave}
-                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>{isSaved ? '✅' : '🔖'}</span>
                 <div>
-                  <p className="font-bold text-[12px]">{isSaved ? 'Saved' : 'Save Post'}</p>
-                  <p className="text-[11px] text-gray-500">{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">{isSaved ? 'Saved' : 'Save Post'}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">{isSaved ? 'সংরক্ষিত হয়েছে' : 'পোস্ট সংরক্ষণ করুন'}</p>
                 </div>
               </button>
               {currentUser && post.user.id === currentUser.id && (
                 <button onClick={handleDelete}
-                  className="w-full text-left px-4 py-3 text-[13px] hover:bg-red-50 text-red-600 transition-colors font-medium flex items-center gap-2">
+                  className="w-full text-left px-4 py-3 text-[13px] hover:bg-red-50 dark:hover:bg-[#2d1414] text-red-600 transition-colors font-medium flex items-center gap-2">
                   <span>🗑️</span>
                   <div>
                     <p className="font-bold text-[12px]">Delete Post</p>
@@ -153,19 +160,19 @@ export default function Post({ post }) {
                 </button>
               )}
               <button onClick={() => setShowMenu(false)}
-                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>🔕</span>
                 <div>
-                  <p className="font-bold text-[12px]">Hide Post</p>
-                  <p className="text-[11px] text-gray-500">পোস্ট লুকান</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">Hide Post</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">পোস্ট লুকান</p>
                 </div>
               </button>
               <button onClick={() => setShowMenu(false)}
-                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 transition-colors font-medium flex items-center gap-2">
+                className="w-full text-left px-4 py-3 text-[13px] hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors font-medium flex items-center gap-2">
                 <span>🚫</span>
                 <div>
-                  <p className="font-bold text-[12px]">Report</p>
-                  <p className="text-[11px] text-gray-500">রিপোর্ট করুন</p>
+                  <p className="font-bold text-[12px] text-gray-800 dark:text-[#e8f5e9]">Report</p>
+                  <p className="text-[11px] text-gray-500 dark:text-[#4a7a50]">রিপোর্ট করুন</p>
                 </div>
               </button>
             </div>
@@ -175,14 +182,14 @@ export default function Post({ post }) {
 
       {/* Arabic text */}
       {post.arabic && (
-        <div className="mx-4 mb-3 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl px-5 py-4 text-center">
-          <p className="text-green-800 text-[20px] font-bold arabic leading-loose">{post.arabic}</p>
+        <div className="mx-4 mb-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-[#0f2313] dark:to-[#0a1a0d] border border-green-200 dark:border-[#1a4a20] rounded-xl px-5 py-4 text-center">
+          <p className="text-green-800 dark:text-[#a7d4ab] text-[20px] font-bold arabic leading-loose">{post.arabic}</p>
         </div>
       )}
 
       {/* Content */}
       <div className="px-4 pb-3">
-        <p className="text-[15px] leading-relaxed whitespace-pre-line text-gray-800">{post.content}</p>
+        <p className="text-[15px] leading-relaxed whitespace-pre-line text-gray-800 dark:text-[#c8e6c9]">{post.content}</p>
       </div>
 
       {/* Image */}
@@ -190,7 +197,7 @@ export default function Post({ post }) {
         <img src={post.image} alt="post" className="w-full object-cover max-h-[400px] cursor-pointer hover:brightness-95 transition-all" />
       )}
 
-      {/* Counts */}
+      {/* Reaction counts */}
       {(() => {
         const allLabels = Object.values(post.userReactions || {});
         const topEmojis = [...new Set(allLabels)]
@@ -204,24 +211,25 @@ export default function Post({ post }) {
                 <span className="text-[16px] leading-none">{topEmojis.join('')}</span>
               )}
               {(post.likes || 0) > 0 && (
-                <span className="text-[14px] text-[#65676b] ml-1">
+                <span className="text-[14px] text-gray-500 dark:text-[#4a7a50] ml-1">
                   {(post.likes || 0).toLocaleString()}
                 </span>
               )}
             </div>
-            <button onClick={() => setShowComments(!showComments)} className="text-[14px] text-[#65676b] hover:underline">
-              {post.comments > 0 && `${post.comments} Comments ·`} {post.shares > 0 && `${post.shares} Shares`}
+            <button onClick={() => setShowComments(!showComments)}
+              className="text-[14px] text-gray-500 dark:text-[#4a7a50] hover:underline">
+              {post.comments > 0 && `${post.comments} Comments`}{post.comments > 0 && post.shares > 0 && ' · '}{post.shares > 0 && `${post.shares} Shares`}
             </button>
           </div>
         );
       })()}
 
-      <hr className="border-green-100 mx-4" />
+      <hr className="border-green-100 dark:border-[#1a4a20] mx-4" />
 
-      {/* Action buttons — Facebook style */}
+      {/* Action buttons */}
       <div className="flex items-center px-2 py-1">
 
-        {/* Dua / React — tap=Dua, hold/hover=all reactions */}
+        {/* Dua / Reactions */}
         <button
           ref={duaBtnRef}
           onClick={onDuaClick}
@@ -229,64 +237,53 @@ export default function Post({ post }) {
           onMouseLeave={onMouseLeave}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors select-none ${
-            myReaction ? 'bg-green-50' : 'hover:bg-green-50'
+          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-colors select-none active:scale-95 ${
+            myReaction ? 'bg-green-50 dark:bg-[#142d18]' : 'hover:bg-green-50 dark:hover:bg-[#142d18]'
           }`}>
-          <span className="text-[20px] leading-none">
-            {reactionObj ? reactionObj.emoji : '🤲'}
-          </span>
-          <div className="text-left leading-tight">
-            <p className="font-bold text-[12px]" style={{ color: reactionObj ? reactionObj.color : '#4b5563' }}>
+          <span className="text-[20px] leading-none">{reactionObj ? reactionObj.emoji : '🤲'}</span>
+          <div className="text-left leading-tight min-w-0">
+            <p className="font-bold text-[12px] truncate" style={{ color: reactionObj ? reactionObj.color : '#4b5563' }}>
               {myReaction || 'Dua'}
             </p>
-            <p className="text-[10px] text-gray-400">
-              {myReaction ? 'রিয়েক্ট করা হয়েছে' : "দু'আ · ধরে রাখুন ↕"}
+            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50] truncate">
+              {myReaction ? 'রিয়েক্ট হয়েছে' : "দু'আ করুন"}
             </p>
           </div>
         </button>
 
-        <div className="w-px h-6 bg-green-100" />
+        <div className="w-px h-6 bg-green-100 dark:bg-[#1a4a20]" />
 
         {/* Comment */}
         <button onClick={() => setShowComments(!showComments)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-green-50 transition-colors active:scale-95">
-          <FaRegComment className="text-[18px] text-gray-500" />
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors active:scale-95">
+          <FaRegComment className="text-[18px] text-gray-500 dark:text-[#4a7a50]" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[12px] text-gray-600">Comment</p>
-            <p className="text-[10px] text-gray-400">মন্তব্য</p>
+            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">Comment</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">মন্তব্য</p>
           </div>
         </button>
 
-        <div className="w-px h-6 bg-green-100" />
+        <div className="w-px h-6 bg-green-100 dark:bg-[#1a4a20]" />
 
         {/* Share */}
         <button onClick={() => sharePost(post.id)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg hover:bg-green-50 transition-colors active:scale-95">
-          <FaShare className="text-[18px] text-gray-500" />
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-green-50 dark:hover:bg-[#142d18] transition-colors active:scale-95">
+          <FaShare className="text-[18px] text-gray-500 dark:text-[#4a7a50]" />
           <div className="text-left leading-tight">
-            <p className="font-bold text-[12px] text-gray-600">Share</p>
-            <p className="text-[10px] text-gray-400">শেয়ার</p>
+            <p className="font-bold text-[12px] text-gray-600 dark:text-[#6abf69]">Share</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#4a7a50]">শেয়ার</p>
           </div>
         </button>
-
       </div>
 
-      {/* Reaction picker — rendered at body root via portal (bypasses overflow:hidden) */}
+      {/* Reaction picker portal */}
       {showReactions && createPortal(
         <>
-          <div
-            className="fixed inset-0"
-            style={{ zIndex: 9998 }}
-            onClick={() => setShowReactions(false)}
-          />
-          <div
-            className="fixed flex items-center gap-1.5 bg-white rounded-full shadow-2xl px-3 py-2.5 border border-green-100"
+          <div className="fixed inset-0" style={{ zIndex: 9998 }} onClick={() => setShowReactions(false)} />
+          <div className="fixed flex items-center gap-1.5 bg-white dark:bg-[#0f2313] rounded-full shadow-2xl px-3 py-2.5 border border-green-100 dark:border-[#1a4a20]"
             style={{ left: pickerPos.x, top: pickerPos.y, zIndex: 9999 }}>
             {REACTIONS.map(r => (
-              <button
-                key={r.label}
-                onClick={() => handleReact(r)}
-                title={r.label}
+              <button key={r.label} onClick={() => handleReact(r)} title={r.label}
                 className={`text-[28px] leading-none transition-transform duration-150 active:scale-90 hover:scale-150 ${
                   myReaction === r.label ? 'scale-[1.35] drop-shadow' : ''
                 }`}>
@@ -298,28 +295,34 @@ export default function Post({ post }) {
         document.body
       )}
 
-      {/* Comments */}
+      {/* Comments section */}
       {showComments && (
         <div className="px-4 pb-3">
-          <hr className="border-green-100 mb-3" />
+          <hr className="border-green-100 dark:border-[#1a4a20] mb-3" />
           {commentsList.map(c => (
             <div key={c.id} className="flex items-start gap-2 mb-2">
-              <img src={c.user.avatar} alt={c.user.name} className="w-8 h-8 rounded-full object-cover border-2 border-green-300 flex-shrink-0" />
-              <div className="bg-green-50 rounded-2xl px-3 py-2 border border-green-100 flex-1">
-                <p className="font-bold text-[13px] text-green-800">{c.user.name}</p>
-                <p className="text-[14px] text-gray-700">{c.text}</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{c.time}</p>
+              <img src={c.user.avatar} alt={c.user.name}
+                className="w-8 h-8 rounded-full object-cover border-2 border-green-300 flex-shrink-0" />
+              <div className="bg-green-50 dark:bg-[#142d18] rounded-2xl px-3 py-2 border border-green-100 dark:border-[#1a4a20] flex-1">
+                <p className="font-bold text-[13px] text-green-800 dark:text-[#6abf69]">{c.user.name}</p>
+                <p className="text-[14px] text-gray-700 dark:text-[#c8e6c9]">{c.text}</p>
+                <p className="text-[11px] text-gray-400 dark:text-[#4a7a50] mt-0.5">{c.time}</p>
               </div>
             </div>
           ))}
           {currentUser && (
             <form onSubmit={handleComment} className="flex items-center gap-2 mt-2">
-              <img src={currentUser.avatar} alt="me" className="w-8 h-8 rounded-full object-cover border-2 border-green-400 flex-shrink-0" />
+              <img src={currentUser.avatar} alt="me"
+                className="w-8 h-8 rounded-full object-cover border-2 border-green-400 flex-shrink-0" />
               <div className="flex-1 relative">
                 <input type="text" value={comment} onChange={e => setComment(e.target.value)}
                   placeholder="Write a comment / মন্তব্য লিখুন... 🤲"
-                  className="w-full bg-green-50 border border-green-200 rounded-full px-4 py-2 text-[14px] placeholder-green-400 outline-none focus:border-green-400 pr-10" />
-                <button type="submit" disabled={!comment.trim()} className="absolute right-3 top-1/2 -translate-y-1/2 text-[18px] disabled:opacity-40">🕌</button>
+                  className="w-full bg-green-50 dark:bg-[#142d18] border border-green-200 dark:border-[#1a4a20] rounded-full px-4 py-2 text-[14px] text-gray-800 dark:text-[#e8f5e9] placeholder-green-400 dark:placeholder-[#2d5a35] outline-none focus:border-green-400 pr-10"
+                  style={{ fontSize:'16px' }} />
+                <button type="submit" disabled={!comment.trim()}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[18px] disabled:opacity-40">
+                  🕌
+                </button>
               </div>
             </form>
           )}
