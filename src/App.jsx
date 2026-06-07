@@ -14,6 +14,9 @@ import QuranPage from './pages/QuranPage'
 import GroupsPage from './pages/GroupsPage'
 import EventsPage from './pages/EventsPage'
 import SettingsPage from './pages/SettingsPage'
+import PrayerTimesPage from './pages/PrayerTimesPage'
+import SadaqahPage from './pages/SadaqahPage'
+import UmmahWorldPage from './pages/UmmahWorldPage'
 
 function PrivateRoute({ children }) {
   const { currentUser, authLoading } = useApp();
@@ -60,7 +63,10 @@ export default function App() {
         <Route path="/quran" element={<PrivateRoute><Layout><QuranPage /></Layout></PrivateRoute>} />
         <Route path="/groups" element={<PrivateRoute><Layout><GroupsPage /></Layout></PrivateRoute>} />
         <Route path="/events"    element={<PrivateRoute><Layout><EventsPage    /></Layout></PrivateRoute>} />
-        <Route path="/settings"  element={<PrivateRoute><Layout wide><SettingsPage  /></Layout></PrivateRoute>} />
+        <Route path="/settings"      element={<PrivateRoute><Layout wide><SettingsPage    /></Layout></PrivateRoute>} />
+        <Route path="/prayer-times"  element={<PrivateRoute><Layout><PrayerTimesPage /></Layout></PrivateRoute>} />
+        <Route path="/sadaqah"       element={<PrivateRoute><Layout><SadaqahPage     /></Layout></PrivateRoute>} />
+        <Route path="/ummah-world"   element={<PrivateRoute><Layout><UmmahWorldPage  /></Layout></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -8,10 +8,10 @@ const navItems = [
   { icon: FaUsers,    en: 'Groups',       bn: 'গ্রুপসমূহ',      path: '/groups' },
   { icon: FaBookOpen, en: 'Quran',        bn: 'কুরআন ও হাদিস',  path: '/quran' },
   { icon: FaMosque,   en: 'Profile',      bn: 'প্রোফাইল',        path: '/profile' },
-  { icon: FaPray,     en: 'Prayer Times', bn: 'নামাজের সময়',    path: null },
+  { icon: FaPray,     en: 'Prayer Times', bn: 'নামাজের সময়',    path: '/prayer-times' },
   { icon: FaStar,     en: 'Events',       bn: 'ইভেন্টসমূহ',      path: '/events' },
-  { icon: FaHeart,    en: 'Sadaqah',      bn: 'সদকা ও দান',      path: null },
-  { icon: FaGlobe,    en: 'Ummah World',  bn: 'উম্মাহ ওয়ার্ল্ড', path: null },
+  { icon: FaHeart,    en: 'Sadaqah',      bn: 'সদকা ও দান',      path: '/sadaqah' },
+  { icon: FaGlobe,    en: 'Ummah World',  bn: 'উম্মাহ ওয়ার্ল্ড', path: '/ummah-world' },
   { icon: FaCog,      en: 'Settings',     bn: 'সেটিংস',           path: '/settings' },
 ];
 
