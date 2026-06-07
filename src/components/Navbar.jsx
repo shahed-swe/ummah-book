@@ -93,7 +93,7 @@ export default function Navbar() {
             return (
               <button key={en} onClick={() => navigate(path)} title={`${en} / ${bn}`}
                 className={`relative flex flex-col items-center justify-center h-[48px] w-[80px] rounded-lg transition-all text-green-100 hover:bg-white/10 ${
-                  active ? 'bg-white/15 border-b-[3px] border-yellow-400 text-yellow-300' : ''
+                  active ? 'bg-white/15 border-b-[3px] border-white text-white' : ''
                 }`}>
                 <Icon className="text-[17px]" />
                 <span className="text-[9px] mt-0.5 font-bold">{lang === 'en' ? en : bn}</span>

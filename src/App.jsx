@@ -38,8 +38,10 @@ function Layout({ children, wide = false }) {
       <Navbar />
       <div className="pt-[56px] flex min-h-screen">
         <LeftSidebar />
-        <main className={`flex-1 flex justify-center py-4 lg:ml-[280px] mb-24 lg:mb-0 ${wide ? '' : 'xl:mr-[280px]'}`}>
-          <div className={`w-full px-3 ${wide ? 'max-w-[920px]' : 'max-w-[590px]'}`}>
+        <main
+          className={`flex-1 flex justify-center pt-3 lg:ml-[280px] lg:mb-0 ${wide ? '' : 'xl:mr-[280px]'}`}
+          style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className={`w-full px-2 sm:px-3 ${wide ? 'max-w-[920px]' : 'max-w-[600px]'}`}>
             {children}
           </div>
         </main>

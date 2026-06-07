@@ -23,7 +23,9 @@ function SurahCard({ surah, onSelect }) {
 }
 
 function AyatView({ surah, onBack }) {
-  const [activeAyat, setActiveAyat] = useState(null);
+  const [activeAyat, setActiveAyat] = useState('all');
+
+  const showAll = activeAyat === 'all';
 
   return (
     <div className="fade-in">
@@ -35,8 +37,8 @@ function AyatView({ surah, onBack }) {
             ←
           </button>
           <div className="flex-1">
-            <h2 className="font-bold text-[18px] text-green-800">{surah.name} — {surah.banglaName}</h2>
-            <p className="text-[12px] text-gray-500">{surah.totalAyats} আয়াত · {surah.meaning} · {surah.type}</p>
+            <h2 className="font-bold text-[18px] text-green-800 dark:text-[#c8e6c9]">{surah.name} — {surah.banglaName}</h2>
+            <p className="text-[12px] text-gray-500 dark:text-[#4a7a50]">{surah.totalAyats} আয়াত · {surah.meaning} · {surah.type}</p>
           </div>
         </div>
         <div className="bg-gradient-to-r from-green-700 to-emerald-800 rounded-xl p-4 text-center">
@@ -45,22 +47,34 @@ function AyatView({ surah, onBack }) {
             <p className="arabic text-green-100 text-[14px] mt-2">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
           )}
         </div>
+
+        {/* Toggle: show translation or just Arabic */}
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => setActiveAyat('all')}
+            className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all ${showAll ? 'bg-green-700 text-white' : 'bg-green-50 dark:bg-[#142d18] text-green-700 dark:text-[#6abf69] border border-green-200 dark:border-[#1a4a20]'}`}>
+            আরবি + বাংলা
+          </button>
+          <button
+            onClick={() => setActiveAyat('arabic')}
+            className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all ${!showAll ? 'bg-green-700 text-white' : 'bg-green-50 dark:bg-[#142d18] text-green-700 dark:text-[#6abf69] border border-green-200 dark:border-[#1a4a20]'}`}>
+            শুধু আরবি
+          </button>
+        </div>
       </div>
 
       {/* Ayats */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {surah.ayats.map(ayat => (
-          <div key={ayat.n}
-            className={`card p-4 cursor-pointer transition-all ${activeAyat === ayat.n ? 'border-green-400 shadow-md' : 'hover:border-green-300'}`}
-            onClick={() => setActiveAyat(activeAyat === ayat.n ? null : ayat.n)}>
+          <div key={ayat.n} className="card p-4">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-[13px] shrink-0 mt-1">
+              <div className="w-9 h-9 rounded-full bg-green-700 flex items-center justify-center text-white font-bold text-[12px] shrink-0 mt-1">
                 {ayat.n}
               </div>
               <div className="flex-1">
-                <p className="arabic text-green-800 text-[20px] leading-loose text-right">{ayat.ar}</p>
-                {(activeAyat === ayat.n || true) && (
-                  <p className="text-gray-600 text-[13px] mt-3 pt-3 border-t border-green-50 leading-relaxed">{ayat.bn}</p>
+                <p className="arabic text-green-800 dark:text-[#a7d4ab] leading-loose text-right" style={{ fontSize: '20px' }}>{ayat.ar}</p>
+                {showAll && (
+                  <p className="text-gray-600 dark:text-[#c8e6c9] text-[13px] mt-3 pt-3 border-t border-green-100 dark:border-[#1a4a20] leading-relaxed">{ayat.bn}</p>
                 )}
               </div>
             </div>
@@ -68,7 +82,7 @@ function AyatView({ surah, onBack }) {
         ))}
 
         {surah.ayats.length < surah.totalAyats && (
-          <div className="card p-4 text-center text-[13px] text-green-600 bg-green-50">
+          <div className="card p-4 text-center text-[13px] text-green-600 dark:text-[#4a7a50] bg-green-50 dark:bg-[#0f2313]">
             🕌 সম্পূর্ণ সূরার বাকি {surah.totalAyats - surah.ayats.length}টি আয়াত শীঘ্রই আসছে। আমিন।
           </div>
         )}

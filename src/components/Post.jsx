@@ -44,7 +44,14 @@ export default function Post({ post }) {
   const isSaved     = savedPosts.includes(post.id);
 
   const openPicker = () => {
-    if (duaBtnRef.current) {
+    if (window.innerWidth < 640) {
+      // Mobile: center horizontally above the button
+      const pickerW = 260;
+      setPickerPos({
+        x: Math.max(8, (window.innerWidth - pickerW) / 2),
+        y: window.innerHeight - 140,
+      });
+    } else if (duaBtnRef.current) {
       const r = duaBtnRef.current.getBoundingClientRect();
       setPickerPos({
         x: Math.max(8, Math.min(r.left - 30, window.innerWidth - 270)),

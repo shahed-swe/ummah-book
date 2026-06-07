@@ -144,7 +144,7 @@ function EditProfileModal({ user, onClose, onSave }) {
       <div className="flex-1 flex items-end sm:items-center justify-center">
         <div
           className="w-full max-w-[520px] bg-white dark:bg-[#0f2313] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col"
-          style={{ height:'96vh', maxHeight:'96vh' }}>
+          style={{ height: 'min(96vh, 100dvh)', maxHeight: 'min(96vh, 100dvh)' }}>
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 dark:border-[#1a4a20] shrink-0 rounded-t-3xl bg-white dark:bg-[#0f2313]">
